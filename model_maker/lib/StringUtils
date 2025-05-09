@@ -1,0 +1,22 @@
+class StringUtils {
+  // 下划线转小驼峰
+  static String underscoreToCamelCase(String input) {
+    final parts = input.split('_');
+    if (parts.isEmpty) {
+      return '';
+    }
+    final firstPart = parts[0];
+    final restParts = parts.sublist(1).map((part) {
+      return part.isNotEmpty? '${part[0].toUpperCase()}${part.substring(1)}' : '';
+    }).join();
+    return '$firstPart$restParts';
+  }
+
+  // 下划线转大驼峰
+  static String underscoreToPascalCase(String input) {
+    final parts = input.split('_');
+    return parts.map((part) {
+      return part.isNotEmpty? '${part[0].toUpperCase()}${part.substring(1)}' : '';
+    }).join();
+  }
+}
