@@ -1,7 +1,6 @@
 import 'dart:convert';
-import 'dart:ffi';
-
-import 'package:model_maker/StringUtils';
+import 'package:model_maker/configurations_model.dart';
+import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
 
 /// JSON工具类
@@ -17,12 +16,12 @@ class JsonTool {
   }
 
   /// 转换成模型信息
-  static String? generateModels(String? jsonStr) {
+  static String? generateModels(String? jsonStr, ConfigurationsModel conf) {
     if (jsonStr == null || jsonStr.isEmpty) {
       return null;
     }
     var map = jsonStringToMap(jsonStr);
-    ModelInfo? modelInfo = _makeModel(map, 'UserInfo', 'TT');
+    ModelInfo? modelInfo = _makeModel(map, conf.modelName, '', conf);
     print(modelInfo);
     if (modelInfo != null) {
       String modelStr = _modelString(modelInfo);
@@ -33,7 +32,12 @@ class JsonTool {
   }
 
   // 生成模型
-  static ModelInfo? _makeModel(dynamic map, String key, String superTypeName) {
+  static ModelInfo? _makeModel(
+    dynamic map,
+    String key,
+    String superTypeName,
+    ConfigurationsModel conf,
+  ) {
     String selfTypeName =
         superTypeName + StringUtils.underscoreToPascalCase(key);
 
@@ -43,7 +47,13 @@ class JsonTool {
     List<PropertyInfo> properties = [];
     if (map is Map) {
       Map m = map;
-      _makeSubModelsAndProperties(m, selfTypeName, modelInfos, properties);
+      _makeSubModelsAndProperties(
+        m,
+        selfTypeName,
+        modelInfos,
+        properties,
+        conf,
+      );
     } else if (map is List) {
       List list = map;
       dynamic subObj = list.first;
@@ -53,6 +63,7 @@ class JsonTool {
           selfTypeName,
           modelInfos,
           properties,
+          conf,
         );
       } else {
         print(subObj);
@@ -75,20 +86,24 @@ class JsonTool {
     String selfTypeName,
     List<ModelInfo> modelInfos,
     List<PropertyInfo> properties,
+    ConfigurationsModel conf,
   ) {
     for (var entry in m.entries) {
       String originKey = entry.key;
       dynamic value = entry.value;
-
+      var key =
+          conf.isCamelCase
+              ? StringUtils.underscoreToCamelCase(originKey)
+              : originKey;
       if (value is! String && value is! double && value is! int) {
-        var modelInfo = _makeModel(value, originKey, selfTypeName);
+        var modelInfo = _makeModel(value, key, selfTypeName, conf);
         if (modelInfo != null) {
           modelInfos.add(modelInfo);
         }
       }
       var property = PropertyInfo(
-        originKey,
-        _typeName(originKey, value, selfTypeName),
+        key,
+        _typeName(key, value, selfTypeName),
         value is List,
       );
       properties.add(property);

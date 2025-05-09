@@ -1,59 +1,46 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:model_maker/configurations_model.dart';
+import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ConfigurationsModel(),
+      child: MaterialApp(home: MyApp()),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  final GlobalKey<_SplitWindowState> _childKey = GlobalKey();
+  final GlobalKey<_SplitWindowState> _splitWindowStateKey = GlobalKey();
 
   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    loadJsonData();
-
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('模型生成器'),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                _generateModels(context);
-              },
-              child: Text('生成'),
-            ),
-          ],
-        ),
-        body: SplitWindow(key: _childKey),
+        appBar: _buildAppBar(),
+        body: SplitWindow(key: _splitWindowStateKey),
       ),
     );
   }
 
-  Future<void> loadJsonData() async {
-    try {
-      // 读取 JSON 文件内容
-      String jsonString = await rootBundle.loadString(
-        'assets/defaultText.json',
-      );
-      _childKey.currentState?.textEditingController.text = jsonString;
-    } catch (e) {
-      print('读取 JSON 文件时出错: $e');
-    }
-  }
-
-  /// 转换成Map对象
-  void _generateModels(BuildContext context) {
-    String? jsonStr = _childKey.currentState?.textEditingController.text;
-    String? resultStr = JsonTool.generateModels(jsonStr);
-    _childKey.currentState?.textResultController.text = resultStr ?? "";
+  /// appBar
+  AppBar _buildAppBar() {
+    double height = 100;
+    return AppBar(
+      backgroundColor: Colors.blueGrey,
+      toolbarHeight: height,
+      elevation: 0,
+      title: FunctionsAppBar(),
+    );
   }
 }
 
+/// 分体窗口
 class SplitWindow extends StatefulWidget {
   const SplitWindow({super.key});
   @override
@@ -75,6 +62,7 @@ class _SplitWindowState extends State<SplitWindow> {
 
   @override
   Widget build(BuildContext context) {
+    final confModel = Provider.of<ConfigurationsModel>(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         return GestureDetector(
@@ -101,9 +89,14 @@ class _SplitWindowState extends State<SplitWindow> {
                         maxLines: null,
                         decoration: InputDecoration(
                           hintText: "请在此处输入json文本",
+                          hintStyle: TextStyle(color: Colors.grey),
                           border: InputBorder.none,
                         ),
                         controller: textEditingController,
+                        onChanged: (value) {
+                          textResultController.text =
+                              JsonTool.generateModels(value, confModel) ?? "";
+                        },
                       ),
                     ),
                   ),
@@ -147,6 +140,7 @@ class _SplitWindowState extends State<SplitWindow> {
                         maxLines: null,
                         decoration: InputDecoration(
                           hintText: "模型类生成后显示在此处",
+                          hintStyle: TextStyle(color: Colors.grey),
                           border: InputBorder.none,
                         ),
                         controller: textResultController,

@@ -6,9 +6,12 @@ class StringUtils {
       return '';
     }
     final firstPart = parts[0];
-    final restParts = parts.sublist(1).map((part) {
-      return part.isNotEmpty? '${part[0].toUpperCase()}${part.substring(1)}' : '';
-    }).join();
+    final restParts =
+        parts.sublist(1).map((part) {
+          return part.isNotEmpty
+              ? '${part[0].toUpperCase()}${part.substring(1)}'
+              : '';
+        }).join();
     return '$firstPart$restParts';
   }
 
@@ -16,7 +19,9 @@ class StringUtils {
   static String underscoreToPascalCase(String input) {
     final parts = input.split('_');
     return parts.map((part) {
-      return part.isNotEmpty? '${part[0].toUpperCase()}${part.substring(1)}' : '';
+      return part.isNotEmpty
+          ? '${part[0].toUpperCase()}${part.substring(1)}'
+          : '';
     }).join();
   }
 }
