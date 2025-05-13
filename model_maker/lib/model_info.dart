@@ -1,3 +1,4 @@
+/// 模型信息
 class ModelInfo {
   ModelInfo(
     this.originKey,
@@ -19,6 +20,7 @@ class ModelInfo {
   List<PropertyInfo> properties;
 }
 
+/// 属性信息
 class PropertyInfo {
   PropertyInfo(this.key, this.type, this.isList);
   String key;

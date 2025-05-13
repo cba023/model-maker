@@ -24,7 +24,12 @@ class JsonTool {
     ModelInfo? modelInfo = _makeModel(map, conf.modelName, '', conf);
     print(modelInfo);
     if (modelInfo != null) {
-      String modelStr = _modelString(modelInfo);
+      String modelStr = _modelString(modelInfo, conf);
+
+      if (conf.supportSmartCodable) {
+        modelStr = modelStr.replaceRange(0, 0, "import SmartCodable\n\n");
+      }
+
       print(modelStr);
       return modelStr;
     }
@@ -123,9 +128,23 @@ class JsonTool {
     }
   }
 
-  static String _modelString(ModelInfo modelInfo) {
+  static String _modelString(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
-    var headerLine = "class ${modelInfo.typeName}: NSObject {";
+
+    /// 类声明所在的那一行
+    String headerLine;
+    if (conf.isUsingStruct) {
+      headerLine = 'struct ${modelInfo.typeName} {';
+      if (conf.supportSmartCodable) {
+        headerLine = headerLine.replaceFirst('{', ': SmartCodable {');
+      }
+    } else {
+      headerLine = 'class ${modelInfo.typeName}: NSObject {';
+      if (conf.supportSmartCodable) {
+        headerLine = headerLine.replaceFirst(' {', ', SmartCodable {');
+      }
+    }
+
     modelStr += headerLine;
     for (var property in modelInfo.properties) {
       String propertyStr;
@@ -136,9 +155,28 @@ class JsonTool {
       }
       modelStr += "\n$propertyStr";
     }
+
+    /// 检查SmartCodable要求的映射关系
+    if (conf.supportSmartCodable) {
+      var mappingStr =
+          "\n\n    static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
+      for (var property in modelInfo.properties) {
+        mappingStr +=
+            "\n            CodingKeys.${property.key} <--- \"${StringUtils.camelToSnake(property.key)}\",";
+      }
+      mappingStr += "\n        ]\n    }";
+
+      modelStr += mappingStr;
+
+      if (!conf.isUsingStruct) {
+        modelStr +=
+            "\n\n    required override init() {\n        super.init()\n    }";
+      }
+    }
+
     modelStr += "\n}";
     for (var subModelInfo in modelInfo.subModelInfos) {
-      var subModelStr = _modelString(subModelInfo);
+      var subModelStr = _modelString(subModelInfo, conf);
       modelStr += "\n\n$subModelStr";
     }
     return modelStr;

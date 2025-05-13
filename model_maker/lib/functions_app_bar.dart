@@ -11,12 +11,7 @@ class FunctionsAppBar extends StatefulWidget {
 }
 
 class _FunctionsAppBarState extends State<FunctionsAppBar> {
-  // bool supportSmartCodable = true;
-  // bool isCamelCase = true;
-  // bool supportObjc = true;
-  // bool isUsingStruct = false;
-  // bool supportYYModel = true;
-  // bool supportPublic = true;
+  var textEditingController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
@@ -27,9 +22,26 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
         children: [
           Wrap(
             direction: Axis.vertical,
-            runSpacing: 40,
+            runSpacing: 30,
             children: [
-              // TextField(minLines: 1),
+              SizedBox(
+                width: 220,
+                height: 30,
+                child: TextField(
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    hintText: "请设置根模型名，默认Root",
+                    hintStyle: TextStyle(color: Colors.grey),
+                    border: InputBorder.none,
+                  ),
+                  controller: textEditingController,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.modelName = value;
+                    });
+                  },
+                ),
+              ),
               CheckboxWithText(
                 text: '使用驼峰命名',
                 value: confModel.isCamelCase,

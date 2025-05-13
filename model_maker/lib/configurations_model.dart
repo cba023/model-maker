@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 配置信息
 class ConfigurationsModel extends ChangeNotifier {
   bool supportSmartCodable = true;
   bool isCamelCase = true;
@@ -7,5 +8,5 @@ class ConfigurationsModel extends ChangeNotifier {
   bool isUsingStruct = false;
   bool supportYYModel = false;
   bool supportPublic = false;
-  String modelName = "";
+  String modelName = "Root";
 }
