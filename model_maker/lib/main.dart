@@ -56,7 +56,14 @@ class _SplitWindowState extends State<SplitWindow> {
   void _updateSplitPosition(Offset position) {
     final screenWidth = MediaQuery.of(context).size.width;
     setState(() {
-      _splitPosition = position.dx / screenWidth;
+      double dx = position.dx;
+      double anchorX = 100.0;
+      if (dx < anchorX) {
+        dx = anchorX;
+      } else if (dx > screenWidth - anchorX - _centerSeplineWidth) {
+        dx = screenWidth - anchorX - _centerSeplineWidth;
+      }
+      _splitPosition = dx / screenWidth;
     });
   }
 
