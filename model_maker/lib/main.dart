@@ -86,7 +86,7 @@ class _SplitWindowState extends State<SplitWindow> {
                 child: Container(
                   color: Colors.black12,
                   child: Padding(
-                    padding: EdgeInsets.all(15),
+                    padding: EdgeInsets.fromLTRB(15, 1, 1, 1),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: double.infinity,
@@ -136,7 +136,7 @@ class _SplitWindowState extends State<SplitWindow> {
                 child: Container(
                   color: Color.fromARGB(255, 204, 249, 205),
                   child: Padding(
-                    padding: EdgeInsets.all(15),
+                    padding: EdgeInsets.fromLTRB(15, 1, 1, 1),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: double.infinity,

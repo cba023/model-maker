@@ -24,12 +24,18 @@ class JsonTool {
     ModelInfo? modelInfo = _makeModel(map, conf.modelName, '', conf);
     print(modelInfo);
     if (modelInfo != null) {
-      String modelStr = _modelString(modelInfo, conf);
-
-      if (conf.supportSmartCodable) {
-        modelStr = modelStr.replaceRange(0, 0, "import SmartCodable\n\n");
+      String modelStr = '\n' + _modelString(modelInfo, conf);
+      if (conf.supportSmartCodable || conf.supportYYModel) {
+        if (conf.supportSmartCodable) {
+          modelStr = modelStr.replaceRange(0, 0, "import SmartCodable\n");
+        }
+        if (conf.supportYYModel) {
+          modelStr = modelStr.replaceRange(0, 0, "import YYModel\n");
+        }
+      } else {
+        modelStr = modelStr.replaceRange(0, 0, "import Foundation\n");
       }
-
+      // modelStr += "\n";
       print(modelStr);
       return modelStr;
     }
@@ -128,11 +134,20 @@ class JsonTool {
     }
   }
 
+  /// 是否是基本数据类型
+  static bool _isBasicType(String typeName) {
+    return typeName == "String" || typeName == "Int" || typeName == "Double";
+  }
+
   static String _modelString(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
 
     /// 类声明所在的那一行
     String headerLine;
+    if (conf.supportObjc) {
+      /// 支持Objc要关闭结构体类型
+      conf.isUsingStruct = false;
+    }
     if (conf.isUsingStruct) {
       headerLine = 'struct ${modelInfo.typeName} {';
       if (conf.supportSmartCodable) {
@@ -143,34 +158,100 @@ class JsonTool {
       if (conf.supportSmartCodable) {
         headerLine = headerLine.replaceFirst(' {', ', SmartCodable {');
       }
+
+      /// 检查是否支持public
+      if (conf.supportPublic) {
+        headerLine = headerLine.replaceRange(0, 0, "public ");
+      }
+
+      /// 检查是否支持Objc
+      if (conf.supportObjc) {
+        headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
+      }
+
+      if (conf.supportYYModel) {
+        headerLine = headerLine.replaceFirst(' {', ', YYModel {');
+        headerLine = headerLine.replaceRange(
+          0,
+          0,
+          "@objc(${modelInfo.typeName})\n",
+        );
+      }
     }
 
     modelStr += headerLine;
     for (var property in modelInfo.properties) {
       String propertyStr;
+      var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
-        propertyStr = "    var ${property.key}: [${property.type}]?";
+        propertyStr = "$varDisplay ${property.key}: [${property.type}]?";
       } else {
-        propertyStr = "    var ${property.key}: ${property.type}?";
+        var propertyTypeDisplay =
+            conf.supportObjc &&
+                    (property.type == 'Int' || property.type == 'Double')
+                ? '${property.type} = 0'
+                : '${property.type}?';
+
+        propertyStr = "$varDisplay ${property.key}: $propertyTypeDisplay";
       }
       modelStr += "\n$propertyStr";
     }
 
     /// 检查SmartCodable要求的映射关系
     if (conf.supportSmartCodable) {
-      var mappingStr =
-          "\n\n    static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
-      for (var property in modelInfo.properties) {
-        mappingStr +=
-            "\n            CodingKeys.${property.key} <--- \"${StringUtils.camelToSnake(property.key)}\",";
+      if (conf.isCamelCase) {
+        var mappingStr =
+            "\n\n    ${conf.supportPublic ? 'public ' : ''}static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
+        for (var property in modelInfo.properties) {
+          mappingStr +=
+              "\n            CodingKeys.${property.key} <--- \"${StringUtils.camelToSnake(property.key)}\",";
+        }
+        mappingStr += "\n        ]\n    }";
+
+        modelStr += mappingStr;
       }
-      mappingStr += "\n        ]\n    }";
-
-      modelStr += mappingStr;
-
       if (!conf.isUsingStruct) {
         modelStr +=
-            "\n\n    required override init() {\n        super.init()\n    }";
+            "\n\n    required ${conf.supportPublic ? 'public ' : ''}override init() {\n        super.init()\n    }";
+      }
+    }
+
+    /// 检查YYModel要求的映射关系
+    if (conf.supportYYModel) {
+      /// 是否有数组的属性
+      var hasListProperty = false;
+      for (int i = 0; i < modelInfo.properties.length; i++) {
+        var elem = modelInfo.properties[i];
+        if (elem.isList) {
+          hasListProperty = true;
+          break;
+        }
+      }
+      if (hasListProperty) {
+        var mappingStr =
+            "\n\n    ${conf.supportPublic ? 'public ' : ''}static func modelContainerPropertyGenericClass() -> [String : Any]? {\n        return [";
+        for (var property in modelInfo.properties) {
+          if (_isBasicType(property.type)) {
+            continue;
+          }
+          mappingStr +=
+              "\n            \"${property.key}\": ${property.type}.self,";
+        }
+        mappingStr += "\n        ]\n    }";
+
+        modelStr += mappingStr;
+      }
+      if (conf.isCamelCase) {
+        // 如果是驼峰属性，需要开启映射
+        var mappingStr =
+            "\n\n    ${conf.supportPublic ? 'public ' : ''} static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
+        for (var property in modelInfo.properties) {
+          mappingStr +=
+              "\n            \"${property.key}\": \"${StringUtils.camelToSnake(property.key)}\",";
+        }
+        mappingStr += "\n        ]\n    }";
+
+        modelStr += mappingStr;
       }
     }
 

@@ -57,6 +57,10 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 onChanged: (value) {
                   setState(() {
                     confModel.isUsingStruct = value ?? true;
+                    if (confModel.isUsingStruct) {
+                      confModel.supportObjc = false;
+                      confModel.supportYYModel = false;
+                    }
                   });
                 },
               ),
@@ -65,6 +69,11 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 value: confModel.supportObjc,
                 onChanged: (value) {
                   setState(() {
+                    if (value == true) {
+                      confModel.isUsingStruct = false;
+                    } else {
+                      confModel.supportYYModel = false;
+                    }
                     confModel.supportObjc = value ?? true;
                   });
                 },
@@ -84,6 +93,10 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 onChanged: (value) {
                   setState(() {
                     confModel.supportYYModel = value ?? true;
+                    if (value == true) {
+                      confModel.supportObjc = true;
+                      confModel.isUsingStruct = false;
+                    }
                   });
                 },
               ),
