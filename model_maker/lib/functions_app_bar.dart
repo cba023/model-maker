@@ -17,7 +17,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
     return Container(
       height: 120,
-      // decoration: BoxDecoration(color: Colors.grey[200]),
       child: Row(
         children: [
           Wrap(
@@ -57,10 +56,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 onChanged: (value) {
                   setState(() {
                     confModel.isUsingStruct = value ?? true;
-                    if (confModel.isUsingStruct) {
-                      confModel.supportObjc = false;
-                      confModel.supportYYModel = false;
-                    }
                   });
                 },
               ),
@@ -69,11 +64,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 value: confModel.supportObjc,
                 onChanged: (value) {
                   setState(() {
-                    if (value == true) {
-                      confModel.isUsingStruct = false;
-                    } else {
-                      confModel.supportYYModel = false;
-                    }
                     confModel.supportObjc = value ?? true;
                   });
                 },
@@ -93,10 +83,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 onChanged: (value) {
                   setState(() {
                     confModel.supportYYModel = value ?? true;
-                    if (value == true) {
-                      confModel.supportObjc = true;
-                      confModel.isUsingStruct = false;
-                    }
                   });
                 },
               ),

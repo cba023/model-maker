@@ -15,8 +15,16 @@ class JsonTool {
     }
   }
 
+  /// 异步获取数据
+  static Future<String?> asyncGenerateModels(
+    String? jsonStr,
+    ConfigurationsModel conf,
+  ) async {
+    return Future(() => _generateModels(jsonStr, conf));
+  }
+
   /// 转换成模型信息
-  static String? generateModels(String? jsonStr, ConfigurationsModel conf) {
+  static String? _generateModels(String? jsonStr, ConfigurationsModel conf) {
     if (jsonStr == null || jsonStr.isEmpty) {
       return null;
     }
@@ -51,7 +59,10 @@ class JsonTool {
   ) {
     String selfTypeName =
         superTypeName + StringUtils.underscoreToPascalCase(key);
-
+    if (selfTypeName.isEmpty) {
+      selfTypeName = defaultModelName;
+    }
+    selfTypeName = selfTypeName.trim();
     ModelInfo modelInfo = ModelInfo(null, map, selfTypeName, [], []);
 
     List<ModelInfo> modelInfos = [];
@@ -144,10 +155,6 @@ class JsonTool {
 
     /// 类声明所在的那一行
     String headerLine;
-    if (conf.supportObjc) {
-      /// 支持Objc要关闭结构体类型
-      conf.isUsingStruct = false;
-    }
     if (conf.isUsingStruct) {
       headerLine = 'struct ${modelInfo.typeName} {';
       if (conf.supportSmartCodable) {

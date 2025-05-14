@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
+import 'package:model_maker/debouncer.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -48,10 +49,32 @@ class SplitWindow extends StatefulWidget {
 }
 
 class _SplitWindowState extends State<SplitWindow> {
+  final Debouncer _debouncer = Debouncer(Duration(seconds: 1));
   double _splitPosition = 0.5; // 初始分割位置为中间
   final double _centerSeplineWidth = 12;
   var textEditingController = TextEditingController();
   var textResultController = TextEditingController();
+  late ConfigurationsModel _confModel;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _confModel = context.read<ConfigurationsModel>();
+    _confModel.addListener(_handleConfChange);
+  }
+
+  /// 配置变更后刷新页面数据
+  void _handleConfChange() {
+    _debouncer.run(() {
+      JsonTool.asyncGenerateModels(textEditingController.text, _confModel)
+          .then((data) {
+            setState(() {
+              textResultController.text = data ?? '';
+            });
+          }) // 成功回调
+          .catchError((error) => print('错误: $error')) // 错误回调
+          .whenComplete(() => print('操作完成')); // 最终回调
+    });
+  }
 
   void _updateSplitPosition(Offset position) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -101,8 +124,16 @@ class _SplitWindowState extends State<SplitWindow> {
                         ),
                         controller: textEditingController,
                         onChanged: (value) {
-                          textResultController.text =
-                              JsonTool.generateModels(value, confModel) ?? "";
+                          JsonTool.asyncGenerateModels(value, confModel)
+                              .then(
+                                (data) => {
+                                  textResultController.text = data ?? '',
+                                },
+                              ) // 成功回调
+                              .catchError(
+                                (error) => print('错误: $error'),
+                              ) // 错误回调
+                              .whenComplete(() => print('操作完成')); // 最终回调
                         },
                       ),
                     ),
