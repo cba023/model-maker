@@ -1,17 +1,18 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
 
 /// JSON工具类
 class JsonTool {
-  /// 字符串转map
-  static Map<String, dynamic> jsonStringToMap(String jsonString) {
+  /// 字符串json解析
+  static dynamic? jsonStringToDynamic(String jsonString) {
     try {
-      return json.decode(jsonString) as Map<String, dynamic>;
+      return json.decode(jsonString);
     } catch (e) {
       print('JSON 解析错误: $e');
-      return {};
+      return null;
     }
   }
 
@@ -28,8 +29,8 @@ class JsonTool {
     if (jsonStr == null || jsonStr.isEmpty) {
       return null;
     }
-    var map = jsonStringToMap(jsonStr);
-    ModelInfo? modelInfo = _makeModel(map, conf.modelName, '', conf);
+    var dynamicObj = jsonStringToDynamic(jsonStr);
+    ModelInfo? modelInfo = _makeModel(dynamicObj, conf.modelName, '', conf);
     print(modelInfo);
     if (modelInfo != null) {
       String modelStr = '\n' + _modelString(modelInfo, conf);
@@ -43,7 +44,6 @@ class JsonTool {
       } else {
         modelStr = modelStr.replaceRange(0, 0, "import Foundation\n");
       }
-      // modelStr += "\n";
       print(modelStr);
       return modelStr;
     }
@@ -78,15 +78,7 @@ class JsonTool {
       );
     } else if (map is List) {
       List list = map;
-      if (list.isEmpty) {
-        var property = PropertyInfo(
-          key,
-          "String",
-          true,
-          isUnidentifiedType: true,
-        );
-        properties.add(property);
-      } else {
+      if (!list.isEmpty) {
         dynamic subObj = list.first;
         if (subObj != null && subObj is Map) {
           _makeSubModelsAndProperties(
@@ -97,13 +89,10 @@ class JsonTool {
             conf,
           );
         } else {
-          var property = PropertyInfo(
-            key,
-            _typeName(key, subObj, selfTypeName),
-            subObj is List,
-          );
-          properties.add(property);
+          return null;
         }
+      } else {
+        return null;
       }
     }
     modelInfo.subModelInfos = modelInfos;
@@ -132,13 +121,28 @@ class JsonTool {
           modelInfos.add(modelInfo);
         }
       }
+
+      /// 不明类型，默认赋值String类型
       var property = PropertyInfo(
         key,
-        _typeName(key, value, selfTypeName),
+        _isEmptyList(value) ? "String" : _typeName(key, value, selfTypeName),
         value is List,
+        true,
+        _isEmptyList(value),
       );
       properties.add(property);
     }
+  }
+
+  /// 判断动态元素是否是空数组(只有是空数组情况才会返回true)
+  static _isEmptyList(dynamic value) {
+    if (value is List) {
+      List<dynamic> list = value;
+      if (list.isEmpty) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static String _typeName(String key, dynamic value, String superTypeName) {
@@ -149,6 +153,14 @@ class JsonTool {
     } else if (value is int) {
       return "Int";
     } else {
+      if (value is List) {
+        List<dynamic> list = value;
+        if (list.length > 0) {
+          dynamic first = list[0];
+          return _typeName(key, first, superTypeName);
+        }
+      }
+
       /// 拼接父模型名在前
       return superTypeName + StringUtils.underscoreToPascalCase(key);
     }
@@ -236,11 +248,13 @@ class JsonTool {
 
     /// 检查YYModel要求的映射关系
     if (conf.supportYYModel) {
-      /// 是否有数组的属性
+      /// 是否有数组的子模型属性
       var hasListProperty = false;
       for (int i = 0; i < modelInfo.properties.length; i++) {
         var elem = modelInfo.properties[i];
-        if (elem.isList) {
+        if (elem.isList &&
+            !elem.isUnidentifiedType &&
+            !_isBasicType(elem.type)) {
           hasListProperty = true;
           break;
         }

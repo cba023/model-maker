@@ -25,11 +25,13 @@ class PropertyInfo {
   PropertyInfo(
     this.key,
     this.type,
-    this.isList, {
+    this.isList,
+    this.isBasicType, [
     this.isUnidentifiedType = false,
-  });
+  ]);
   String key;
   String type;
   bool isList;
+  bool isBasicType;
   bool isUnidentifiedType;
 }
