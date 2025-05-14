@@ -163,12 +163,6 @@ class JsonTool {
       if (conf.supportPublic) {
         headerLine = headerLine.replaceRange(0, 0, "public ");
       }
-
-      /// 检查是否支持Objc
-      if (conf.supportObjc) {
-        headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
-      }
-
       if (conf.supportYYModel) {
         headerLine = headerLine.replaceFirst(' {', ', YYModel {');
         headerLine = headerLine.replaceRange(
@@ -176,6 +170,11 @@ class JsonTool {
           0,
           "@objc(${modelInfo.typeName})\n",
         );
+      }
+
+      /// 检查是否支持Objc
+      if (conf.supportObjc) {
+        headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
       }
     }
 
