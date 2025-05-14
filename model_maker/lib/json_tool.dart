@@ -78,23 +78,32 @@ class JsonTool {
       );
     } else if (map is List) {
       List list = map;
-      dynamic subObj = list.first;
-      if (subObj != null && subObj is Map) {
-        _makeSubModelsAndProperties(
-          subObj,
-          selfTypeName,
-          modelInfos,
-          properties,
-          conf,
-        );
-      } else {
-        print(subObj);
+      if (list.isEmpty) {
         var property = PropertyInfo(
           key,
-          _typeName(key, subObj, selfTypeName),
-          subObj is List,
+          "String",
+          true,
+          isUnidentifiedType: true,
         );
         properties.add(property);
+      } else {
+        dynamic subObj = list.first;
+        if (subObj != null && subObj is Map) {
+          _makeSubModelsAndProperties(
+            subObj,
+            selfTypeName,
+            modelInfos,
+            properties,
+            conf,
+          );
+        } else {
+          var property = PropertyInfo(
+            key,
+            _typeName(key, subObj, selfTypeName),
+            subObj is List,
+          );
+          properties.add(property);
+        }
       }
     }
     modelInfo.subModelInfos = modelInfos;
@@ -112,7 +121,7 @@ class JsonTool {
   ) {
     for (var entry in m.entries) {
       String originKey = entry.key;
-      dynamic value = entry.value;
+      dynamic? value = entry.value;
       var key =
           conf.isCamelCase
               ? StringUtils.underscoreToCamelCase(originKey)
@@ -191,6 +200,9 @@ class JsonTool {
       var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
         propertyStr = "$varDisplay ${property.key}: [${property.type}]?";
+        if (property.isUnidentifiedType) {
+          propertyStr += " // TODO: 未识别类型，此处默认设置为String，请手动处理";
+        }
       } else {
         var propertyTypeDisplay =
             conf.supportObjc &&
@@ -250,7 +262,7 @@ class JsonTool {
       if (conf.isCamelCase) {
         // 如果是驼峰属性，需要开启映射
         var mappingStr =
-            "\n\n    ${conf.supportPublic ? 'public ' : ''} static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
+            "\n\n   ${conf.supportPublic ? 'public ' : ''} static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
           mappingStr +=
               "\n            \"${property.key}\": \"${StringUtils.camelToSnake(property.key)}\",";

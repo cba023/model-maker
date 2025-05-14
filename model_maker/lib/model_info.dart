@@ -22,8 +22,14 @@ class ModelInfo {
 
 /// 属性信息
 class PropertyInfo {
-  PropertyInfo(this.key, this.type, this.isList);
+  PropertyInfo(
+    this.key,
+    this.type,
+    this.isList, {
+    this.isUnidentifiedType = false,
+  });
   String key;
   String type;
   bool isList;
+  bool isUnidentifiedType;
 }
