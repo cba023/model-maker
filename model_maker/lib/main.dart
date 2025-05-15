@@ -15,8 +15,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // final GlobalKey<_SplitWindowState> _splitWindowStateKey = GlobalKey();
-
   MyApp({super.key});
 
   @override
@@ -33,7 +31,7 @@ class MyApp extends StatelessWidget {
       backgroundColor: Colors.blueGrey,
       toolbarHeight: height,
       elevation: 0,
-      title: FunctionsAppBar(onDataPasted: (value) {}),
+      title: FunctionsAppBar(),
     );
   }
 }
@@ -48,6 +46,7 @@ class SplitWindow extends StatefulWidget {
 class _SplitWindowState extends State<SplitWindow> {
   final Debouncer _debouncer = Debouncer(Duration(seconds: 1));
   double _splitPosition = 0.5; // 初始分割位置为中间
+
   final double _centerSeplineWidth = 12;
   var textEditingController = TextEditingController();
   var textResultController = TextEditingController();
@@ -56,6 +55,10 @@ class _SplitWindowState extends State<SplitWindow> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _confModel = context.read<ConfigurationsModel>();
+    _confModel.setOnPastedJsonStringChanged((value) {
+      textEditingController.text = value;
+      _handleConfChange();
+    });
     _confModel.addListener(_handleConfChange);
   }
 
@@ -122,17 +125,8 @@ class _SplitWindowState extends State<SplitWindow> {
                         ),
                         controller: textEditingController,
                         onChanged: (value) {
-                          JsonTool.asyncGenerateModels(value, confModel)
-                              .then(
-                                (data) => {
-                                  textResultController.text = data ?? '',
-                                  outputResult = textResultController.text,
-                                },
-                              ) // 成功回调
-                              .catchError(
-                                (error) => print('错误: $error'),
-                              ) // 错误回调
-                              .whenComplete(() => print('操作完成')); // 最终回调
+                          _confModel.resetpastedJsonString();
+                          _handleConfChange();
                         },
                       ),
                     ),

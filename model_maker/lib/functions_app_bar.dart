@@ -28,10 +28,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             child: MaterialButton(
               onPressed: () {
                 _readClipboard().then((value) {
-                  if (value != null) {
-                    widget.onDataPasted?.call(value);
-                  }
-                  ;
+                  confModel.pastedJsonString = value ?? "";
                 });
               },
               child: const Icon(Icons.paste),

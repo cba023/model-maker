@@ -14,6 +14,7 @@ class ConfigurationsModel extends ChangeNotifier {
   bool _supportYYModel = false;
   bool _supportPublic = false;
   String _modelName = "";
+  String _pastedJsonString = "";
 
   // Getter 方法
   bool get supportSmartCodable => _supportSmartCodable;
@@ -23,6 +24,7 @@ class ConfigurationsModel extends ChangeNotifier {
   bool get supportYYModel => _supportYYModel;
   bool get supportPublic => _supportPublic;
   String get modelName => _modelName;
+  String get pastedJsonString => _pastedJsonString;
 
   // Setter 方法 - 修改值并通知监听器
   set supportSmartCodable(bool value) {
@@ -87,6 +89,26 @@ class ConfigurationsModel extends ChangeNotifier {
     }
   }
 
+  set pastedJsonString(String value) {
+    if (_pastedJsonString != value) {
+      _pastedJsonString = value;
+      _onPastedJsonStringChanged?.call(value);
+    }
+  }
+
+  void resetpastedJsonString() {
+    if (_pastedJsonString.isNotEmpty) {
+      _pastedJsonString = "";
+    }
+  }
+
+  Function(String)? _onPastedJsonStringChanged;
+
+  // 设置 JSON 字符串变化回调
+  void setOnPastedJsonStringChanged(Function(String) callback) {
+    _onPastedJsonStringChanged = callback;
+  }
+
   // 重置所有配置为默认值
   void reset() {
     _supportSmartCodable = true;
@@ -96,6 +118,7 @@ class ConfigurationsModel extends ChangeNotifier {
     _supportYYModel = false;
     _supportPublic = false;
     _modelName = defaultModelName;
+    _pastedJsonString = "";
     notifyListeners();
   }
 }
