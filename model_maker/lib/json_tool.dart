@@ -123,7 +123,8 @@ class JsonTool {
         }
       }
 
-      bool shouldSetToStringDefault = (_isEmptyList(value) || (value == null));
+      bool shouldSetToStringDefault =
+          (_isInvalidList(value) || (value == null));
 
       /// 不明类型，默认赋值String类型
       var property = PropertyInfo(
@@ -141,11 +142,11 @@ class JsonTool {
     }
   }
 
-  /// 判断动态元素是否是空数组(只有是空数组情况才会返回true)
-  static _isEmptyList(dynamic value) {
+  /// 判断List是否非法
+  static _isInvalidList(dynamic value) {
     if (value is List) {
       List<dynamic> list = value;
-      if (list.isEmpty) {
+      if (list.isEmpty || list.first == null) {
         return true;
       }
     }
@@ -218,8 +219,9 @@ class JsonTool {
         headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
       }
     }
-
     modelStr += headerLine;
+
+    /// 属性行
     for (var property in modelInfo.properties) {
       String propertyStr;
       String propertyKey =
@@ -244,9 +246,19 @@ class JsonTool {
       modelStr += "\n$propertyStr";
     }
 
+    /// 是否有需要映射的属性
+    var hasNeedMappingKeyProperties =
+        modelInfo.properties
+            .where(
+              (property) =>
+                  property.key !=
+                  StringUtils.underscoreToCamelCase(property.key),
+            )
+            .isNotEmpty;
+
     /// 检查SmartCodable要求的映射关系
     if (conf.supportSmartCodable) {
-      if (conf.isCamelCase && modelInfo.properties.isNotEmpty) {
+      if (conf.isCamelCase && hasNeedMappingKeyProperties) {
         var mappingStr =
             "\n\n    ${conf.supportPublic ? 'public ' : ''}static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
         for (var property in modelInfo.properties) {
@@ -298,7 +310,7 @@ class JsonTool {
 
         modelStr += mappingStr;
       }
-      if (conf.isCamelCase && modelInfo.properties.isNotEmpty) {
+      if (conf.isCamelCase && hasNeedMappingKeyProperties) {
         // 如果是驼峰属性，需要开启映射
         var mappingStr =
             "\n\n   ${conf.supportPublic ? 'public ' : ''} static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
