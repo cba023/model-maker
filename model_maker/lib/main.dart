@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
 
   /// appBar
   AppBar _buildAppBar() {
-    double height = 100;
+    double height = 115;
     return AppBar(
       backgroundColor: Colors.blueGrey,
       toolbarHeight: height,
