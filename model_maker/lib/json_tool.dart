@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
@@ -113,10 +112,10 @@ class JsonTool {
     for (var entry in m.entries) {
       String originKey = entry.key;
       dynamic? value = entry.value;
-      var key =
-          conf.isCamelCase
-              ? StringUtils.underscoreToCamelCase(originKey)
-              : originKey;
+      var key = originKey;
+      // conf.isCamelCase
+      //     ? StringUtils.underscoreToCamelCase(originKey)
+      //     : originKey;
       if (value is! String && value is! double && value is! int) {
         var modelInfo = _makeModel(value, key, selfTypeName, conf);
         if (modelInfo != null) {
@@ -184,6 +183,7 @@ class JsonTool {
         typeName == "Bool";
   }
 
+  /// 模型信息转化成模型String
   static String _modelString(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
 
@@ -222,9 +222,13 @@ class JsonTool {
     modelStr += headerLine;
     for (var property in modelInfo.properties) {
       String propertyStr;
+      String propertyKey =
+          conf.isCamelCase
+              ? StringUtils.underscoreToCamelCase(property.key)
+              : property.key;
       var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
-        propertyStr = "$varDisplay ${property.key}: [${property.type}]?";
+        propertyStr = "$varDisplay ${propertyKey}: [${property.type}]?";
       } else {
         var propertyTypeDisplay =
             conf.supportObjc &&
@@ -232,7 +236,7 @@ class JsonTool {
                 ? '${property.type} = 0'
                 : '${property.type}?';
 
-        propertyStr = "$varDisplay ${property.key}: $propertyTypeDisplay";
+        propertyStr = "$varDisplay ${propertyKey}: $propertyTypeDisplay";
       }
       if (property.isUnidentifiedType) {
         propertyStr += " // TODO: 未识别类型，此处默认设置为String，请手动处理";
@@ -242,12 +246,16 @@ class JsonTool {
 
     /// 检查SmartCodable要求的映射关系
     if (conf.supportSmartCodable) {
-      if (conf.isCamelCase) {
+      if (conf.isCamelCase && modelInfo.properties.isNotEmpty) {
         var mappingStr =
             "\n\n    ${conf.supportPublic ? 'public ' : ''}static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
         for (var property in modelInfo.properties) {
+          var camelKey = StringUtils.underscoreToCamelCase(property.key);
+          if (camelKey == property.key) {
+            continue;
+          }
           mappingStr +=
-              "\n            CodingKeys.${property.key} <--- \"${StringUtils.camelToSnake(property.key)}\",";
+              "\n            CodingKeys.${camelKey} <--- \"${property.key}\",";
         }
         mappingStr += "\n        ]\n    }";
 
@@ -264,10 +272,10 @@ class JsonTool {
       /// 是否有数组的子模型属性
       var hasListProperty = false;
       for (int i = 0; i < modelInfo.properties.length; i++) {
-        var elem = modelInfo.properties[i];
-        if (elem.isList &&
-            !elem.isUnidentifiedType &&
-            !_isBasicType(elem.type)) {
+        var property = modelInfo.properties[i];
+        if (property.isList &&
+            !property.isUnidentifiedType &&
+            !_isBasicType(property.type)) {
           hasListProperty = true;
           break;
         }
@@ -279,20 +287,27 @@ class JsonTool {
           if (_isBasicType(property.type)) {
             continue;
           }
+          String propertyKey =
+              conf.isCamelCase
+                  ? StringUtils.underscoreToCamelCase(property.key)
+                  : property.key;
           mappingStr +=
-              "\n            \"${property.key}\": ${property.type}.self,";
+              "\n            \"$propertyKey\": ${property.type}.self,";
         }
         mappingStr += "\n        ]\n    }";
 
         modelStr += mappingStr;
       }
-      if (conf.isCamelCase) {
+      if (conf.isCamelCase && modelInfo.properties.isNotEmpty) {
         // 如果是驼峰属性，需要开启映射
         var mappingStr =
             "\n\n   ${conf.supportPublic ? 'public ' : ''} static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
-          mappingStr +=
-              "\n            \"${property.key}\": \"${StringUtils.camelToSnake(property.key)}\",";
+          var camelKey = StringUtils.underscoreToCamelCase(property.key);
+          if (camelKey == property.key) {
+            continue;
+          }
+          mappingStr += "\n            \"$camelKey\": \"${property.key}\",";
         }
         mappingStr += "\n        ]\n    }";
 

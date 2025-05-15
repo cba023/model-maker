@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
+/// 限流工具类
 class Debouncer {
   final int milliseconds;
   Timer? _timer;

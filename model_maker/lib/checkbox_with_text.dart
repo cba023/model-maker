@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// 带文字的checkBox
 class CheckboxWithText extends StatelessWidget {
   final String text;
   final bool value;
