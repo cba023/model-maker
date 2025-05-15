@@ -94,6 +94,8 @@ class JsonTool {
       } else {
         return null;
       }
+    } else if (map == null) {
+      return null;
     }
     modelInfo.subModelInfos = modelInfos;
     modelInfo.properties = properties;
@@ -122,13 +124,19 @@ class JsonTool {
         }
       }
 
+      bool shouldSetToStringDefault = (_isEmptyList(value) || (value == null));
+
       /// 不明类型，默认赋值String类型
       var property = PropertyInfo(
         key,
-        _isEmptyList(value) ? "String" : _typeName(key, value, selfTypeName),
+        shouldSetToStringDefault
+            ? "String"
+            : _typeName(key, value, selfTypeName),
+
+        /// 空list或null都给成String类型
         value is List,
         true,
-        _isEmptyList(value),
+        shouldSetToStringDefault,
       );
       properties.add(property);
     }
@@ -152,6 +160,8 @@ class JsonTool {
       return "Double";
     } else if (value is int) {
       return "Int";
+    } else if (value is bool) {
+      return "Bool";
     } else {
       if (value is List) {
         List<dynamic> list = value;
@@ -168,7 +178,10 @@ class JsonTool {
 
   /// 是否是基本数据类型
   static bool _isBasicType(String typeName) {
-    return typeName == "String" || typeName == "Int" || typeName == "Double";
+    return typeName == "String" ||
+        typeName == "Int" ||
+        typeName == "Double" ||
+        typeName == "Bool";
   }
 
   static String _modelString(ModelInfo modelInfo, ConfigurationsModel conf) {
@@ -212,9 +225,6 @@ class JsonTool {
       var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
         propertyStr = "$varDisplay ${property.key}: [${property.type}]?";
-        if (property.isUnidentifiedType) {
-          propertyStr += " // TODO: 未识别类型，此处默认设置为String，请手动处理";
-        }
       } else {
         var propertyTypeDisplay =
             conf.supportObjc &&
@@ -223,6 +233,9 @@ class JsonTool {
                 : '${property.type}?';
 
         propertyStr = "$varDisplay ${property.key}: $propertyTypeDisplay";
+      }
+      if (property.isUnidentifiedType) {
+        propertyStr += " // TODO: 未识别类型，此处默认设置为String，请手动处理";
       }
       modelStr += "\n$propertyStr";
     }
