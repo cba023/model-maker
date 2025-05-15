@@ -5,7 +5,9 @@ import 'package:model_maker/configurations_model.dart';
 import 'package:provider/provider.dart';
 
 class FunctionsAppBar extends StatefulWidget {
-  const FunctionsAppBar({super.key});
+  final ValueChanged<String>? onDataPasted; // 定义回调函数
+
+  const FunctionsAppBar({Key? key, this.onDataPasted}) : super(key: key);
 
   @override
   State<FunctionsAppBar> createState() => _FunctionsAppBarState();
@@ -21,6 +23,22 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
       height: topHeight,
       child: Row(
         children: [
+          Padding(
+            padding: EdgeInsets.all(4),
+            child: MaterialButton(
+              onPressed: () {
+                _readClipboard().then((value) {
+                  if (value != null) {
+                    widget.onDataPasted?.call(value);
+                  }
+                  ;
+                });
+              },
+              child: const Icon(Icons.paste),
+              color: Colors.redAccent,
+              height: double.infinity,
+            ),
+          ),
           SizedBox(
             width: 300,
             height: double.infinity,
@@ -151,5 +169,30 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('复制成功！'), duration: Duration(seconds: 1)),
     );
+  }
+
+  Future<String?> _readClipboard() async {
+    try {
+      // 获取剪贴板数据
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      if (clipboardData != null && clipboardData.text != null) {
+        // 显示成功提示
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('已粘贴剪贴板内容'), duration: Duration(seconds: 1)),
+        );
+        return clipboardData.text ?? "";
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('剪贴板为空'), duration: Duration(seconds: 1)),
+        );
+        return null;
+      }
+    } catch (e) {
+      // 处理异常
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('读取剪贴板失败: $e'), duration: Duration(seconds: 1)),
+      );
+      return null;
+    }
   }
 }

@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       backgroundColor: Colors.blueGrey,
       toolbarHeight: height,
       elevation: 0,
-      title: FunctionsAppBar(),
+      title: FunctionsAppBar(onDataPasted: (value) {}),
     );
   }
 }
