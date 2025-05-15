@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 final defaultModelName = "Root";
 
+String? outputResult;
+
 /// 配置信息
 class ConfigurationsModel extends ChangeNotifier {
   // 私有变量存储实际值

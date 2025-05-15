@@ -15,17 +15,14 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final GlobalKey<_SplitWindowState> _splitWindowStateKey = GlobalKey();
+  // final GlobalKey<_SplitWindowState> _splitWindowStateKey = GlobalKey();
 
   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: _buildAppBar(),
-        body: SplitWindow(key: _splitWindowStateKey),
-      ),
+      home: Scaffold(appBar: _buildAppBar(), body: SplitWindow(key: key)),
     );
   }
 
@@ -69,6 +66,7 @@ class _SplitWindowState extends State<SplitWindow> {
           .then((data) {
             setState(() {
               textResultController.text = data ?? '';
+              outputResult = textResultController.text;
             });
           }) // 成功回调
           .catchError((error) => print('错误: $error')) // 错误回调
@@ -128,6 +126,7 @@ class _SplitWindowState extends State<SplitWindow> {
                               .then(
                                 (data) => {
                                   textResultController.text = data ?? '',
+                                  outputResult = textResultController.text,
                                 },
                               ) // 成功回调
                               .catchError(
