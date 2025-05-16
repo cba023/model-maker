@@ -110,15 +110,42 @@ class JsonTool {
     ConfigurationsModel conf,
   ) {
     for (var entry in m.entries) {
+      var shouldContinue = false;
       String originKey = entry.key;
       dynamic? value = entry.value;
       var key = originKey;
-      // conf.isCamelCase
-      //     ? StringUtils.underscoreToCamelCase(originKey)
-      //     : originKey;
       if (value is! String && value is! double && value is! int) {
         var modelInfo = _makeModel(value, key, selfTypeName, conf);
         if (modelInfo != null) {
+          // var keys = _modelInfoKeys(modelInfo);
+          // List<ModelInfo> existSameModels;
+          // for (int i = 0; i < modelInfos.length; i++) {
+          //   var oldModelInfo = modelInfos[i];
+          //   var oldKeys = _modelInfoKeys(oldModelInfo);
+          //   bool oldContainedNew = containsAllElements(oldKeys, keys);
+          //   bool newContainedOld = containsAllElements(keys, oldKeys);
+          //   if (oldContainedNew) {
+          //     shouldContinue = true;
+          //     var parentModel = modelInfos.firstWhere(
+          //       (element) => (element.typeName == selfTypeName),
+          //     );
+          //     if (parentModel != null) {
+          //       for (int j = 0; j < parentModel.properties.length; j++) {
+          //         if (parentModel.properties[j].key == key) {
+          //           parentModel.properties[j].type = selfTypeName;
+          //         }
+          //       }
+          //     }
+          //     break;
+          //   } else if (newContainedOld) {
+          //     modelInfos[i] = modelInfo;
+          //     shouldContinue = true;
+          //     break;
+          //   }
+          // }
+          // if (shouldContinue) {
+          //   continue;
+          // }
           modelInfos.add(modelInfo);
         }
       }
@@ -140,6 +167,42 @@ class JsonTool {
       );
       properties.add(property);
     }
+  }
+
+  static List<String> _modelInfoKeys(ModelInfo modelInfo) {
+    var keys =
+        modelInfo.properties.map((propery) {
+          return propery.key;
+        }).toList();
+    return keys;
+  }
+
+  static bool listEqualsUnordered<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+
+    // 复制列表并排序（假设元素支持 Comparable）
+    final sortedA = List<T>.from(a)..sort();
+    final sortedB = List<T>.from(b)..sort();
+
+    return listEquals(sortedA, sortedB);
+  }
+
+  static bool listEquals<T>(List<T>? a, List<T>? b) {
+    if (a == b) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+
+    return true;
+  }
+
+  static bool containsAllElements(List listA, List listB) {
+    final setA = listA.toSet();
+    final setB = listB.toSet();
+    return setA.containsAll(setB);
   }
 
   /// 判断List是否非法
