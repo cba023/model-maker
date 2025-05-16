@@ -236,7 +236,9 @@ class JsonTool {
             conf.supportObjc &&
                     (property.type == 'Int' || property.type == 'Double')
                 ? '${property.type} = 0'
-                : '${property.type}?';
+                : (conf.supportObjc && property.type == 'Bool'
+                    ? '${property.type} = false'
+                    : '${property.type}?');
 
         propertyStr = "$varDisplay ${propertyKey}: $propertyTypeDisplay";
       }
@@ -296,7 +298,7 @@ class JsonTool {
         var mappingStr =
             "\n\n    ${conf.supportPublic ? 'public ' : ''}static func modelContainerPropertyGenericClass() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
-          if (_isBasicType(property.type)) {
+          if (_isBasicType(property.type) || !property.isList) {
             continue;
           }
           String propertyKey =
