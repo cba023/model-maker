@@ -140,8 +140,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               ),
             ],
           ),
-          Expanded(child: Spacer()),
-
+          Spacer(),
           Padding(
             padding: EdgeInsets.all(4),
             child: MaterialButton(

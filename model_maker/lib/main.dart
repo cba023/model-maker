@@ -108,7 +108,7 @@ class _SplitWindowState extends State<SplitWindow> {
                 bottom: 0,
                 width: constraints.maxWidth * _splitPosition,
                 child: Container(
-                  color: Colors.black12,
+                  color: const Color.fromARGB(255, 249, 218, 217),
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(15, 1, 1, 1),
                     child: ConstrainedBox(
