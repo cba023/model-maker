@@ -115,7 +115,10 @@ class JsonTool {
       String originKey = entry.key;
       dynamic value = entry.value;
       var key = originKey;
-      if (value is! String && value is! double && value is! int) {
+      if (value is! String &&
+          value is! double &&
+          value is! int &&
+          value is! bool) {
         var modelInfo = _makeModel(value, key, selfTypeName, conf);
         if (modelInfo != null) {
           modelInfos.add(modelInfo);
