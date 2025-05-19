@@ -1,3 +1,5 @@
+import 'package:model_maker/json_tool.dart';
+
 class StringUtils {
   // 下划线转小驼峰
   static String underscoreToCamelCase(String input) {
@@ -29,5 +31,18 @@ class StringUtils {
           ? '${part[0].toUpperCase()}${part.substring(1)}'
           : '';
     }).join();
+  }
+
+  // TODO项查找
+  static int countofTodo(String text) {
+    int count = 0;
+    int startIndex = 0;
+    while (true) {
+      int index = text.indexOf(todoKey, startIndex);
+      if (index == -1) break;
+      count++;
+      startIndex = index + todoKey.length;
+    }
+    return count;
   }
 }

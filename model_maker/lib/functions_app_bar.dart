@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:model_maker/checkbox_with_text.dart';
 import 'package:model_maker/configurations_model.dart';
+import 'package:model_maker/string_utils.dart';
 import 'package:provider/provider.dart';
 
 class FunctionsAppBar extends StatefulWidget {
@@ -170,9 +171,14 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
   void _copyToClipboard(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
 
+    var hint = "复制成功！";
+    var todosCount = StringUtils.countofTodo(text);
+    if (todosCount > 0) {
+      hint += "注意有$todosCount处TODO项，它们是未识别类型，已经预设为String，为避免出现程序崩溃，请手动处理";
+    }
     // 显示复制成功的提示
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('复制成功！'), duration: Duration(seconds: 1)),
+      SnackBar(content: Text(hint), duration: Duration(seconds: 1)),
     );
   }
 

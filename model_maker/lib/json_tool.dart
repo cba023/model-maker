@@ -3,6 +3,8 @@ import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
 
+final todoKey = '// TODO: ';
+
 /// JSON工具类
 class JsonTool {
   /// 字符串json解析
@@ -227,7 +229,7 @@ class JsonTool {
               : property.key;
       var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
-        propertyStr = "$varDisplay ${propertyKey}: [${property.type}]?";
+        propertyStr = "$varDisplay $propertyKey: [${property.type}]?";
       } else {
         var propertyTypeDisplay =
             conf.supportObjc &&
@@ -240,7 +242,8 @@ class JsonTool {
         propertyStr = "$varDisplay ${propertyKey}: $propertyTypeDisplay";
       }
       if (property.isUnidentifiedType) {
-        propertyStr += " // TODO: 未识别类型，此处默认设置为String，请手动处理";
+        propertyStr +=
+            " $todoKey 未识别`${property.key}`类型，预设为String，为避免出现程序崩溃，请手动处理";
       }
       modelStr += "\n$propertyStr";
     }
