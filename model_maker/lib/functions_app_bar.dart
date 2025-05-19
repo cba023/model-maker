@@ -121,6 +121,15 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 },
               ),
               CheckboxWithText(
+                text: 'Objc可调用SmartCodable反序列化',
+                value: confModel.objcObjcDeserialization,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.objcObjcDeserialization = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
                 text: '支持YYModel',
                 value: confModel.supportYYModel,
                 onChanged: (value) {

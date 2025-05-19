@@ -13,6 +13,9 @@ class ConfigurationsModel extends ChangeNotifier {
   bool _isUsingStruct = false;
   bool _supportYYModel = false;
   bool _supportPublic = false;
+
+  /// 基于SmartCodable的objc反序列化方法
+  bool _objcObjcDeserialization = false;
   String _modelName = "";
   String _pastedJsonString = "";
 
@@ -23,6 +26,7 @@ class ConfigurationsModel extends ChangeNotifier {
   bool get isUsingStruct => _isUsingStruct;
   bool get supportYYModel => _supportYYModel;
   bool get supportPublic => _supportPublic;
+  bool get objcObjcDeserialization => _objcObjcDeserialization;
   String get modelName => _modelName;
   String get pastedJsonString => _pastedJsonString;
 
@@ -59,6 +63,7 @@ class ConfigurationsModel extends ChangeNotifier {
       if (value) {
         _supportYYModel = false;
         _supportObjc = false;
+        _objcObjcDeserialization = false;
       }
       notifyListeners();
     }
@@ -78,6 +83,18 @@ class ConfigurationsModel extends ChangeNotifier {
   set supportPublic(bool value) {
     if (_supportPublic != value) {
       _supportPublic = value;
+      notifyListeners();
+    }
+  }
+
+  set objcObjcDeserialization(bool value) {
+    if (_objcObjcDeserialization != value) {
+      _objcObjcDeserialization = value;
+      if (value) {
+        _supportObjc = true;
+        _isUsingStruct = false;
+        _supportSmartCodable = true;
+      }
       notifyListeners();
     }
   }
@@ -117,6 +134,7 @@ class ConfigurationsModel extends ChangeNotifier {
     _isUsingStruct = false;
     _supportYYModel = false;
     _supportPublic = false;
+    _objcObjcDeserialization = false;
     _modelName = defaultModelName;
     _pastedJsonString = "";
     notifyListeners();

@@ -326,6 +326,21 @@ class JsonTool {
       }
     }
 
+    /// 生成Objc可以调用的SmartCodable构造方法
+    if (conf.objcObjcDeserialization) {
+      var deserializationSingle =
+          "\n    @objc class func instance(from dictionary: [String: Any]?) -> ${modelInfo.typeName}? {";
+      deserializationSingle +=
+          "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
+      modelStr += "\n$deserializationSingle";
+
+      var deserializationArray =
+          "\n    @objc class func instances(from array: [Any]?) -> [${modelInfo.typeName}]? {";
+      deserializationArray +=
+          "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
+      modelStr += "\n$deserializationArray";
+    }
+
     modelStr += "\n}";
     for (var subModelInfo in modelInfo.subModelInfos) {
       var subModelStr = _modelString(subModelInfo, conf);
