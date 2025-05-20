@@ -195,7 +195,7 @@ class JsonTool {
     if (conf.isUsingStruct) {
       headerLine = 'struct ${modelInfo.typeName} {';
       if (conf.supportSmartCodable) {
-        headerLine = headerLine.replaceFirst('{', ': SmartCodable {');
+        headerLine = headerLine.replaceFirst(' {', ': SmartCodable {');
       }
     } else {
       headerLine = 'class ${modelInfo.typeName}: NSObject {';
