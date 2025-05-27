@@ -1,51 +1,125 @@
 import 'dart:convert';
+import 'package:model_maker/collection_tool.dart';
 import 'package:model_maker/configurations_model.dart';
+import 'package:model_maker/document_tool.dart';
 import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
+import 'package:collection/collection.dart';
+import 'package:model_maker/swagger_tool.dart';
 
 final todoKey = '// TODO: ';
 
 /// JSON工具类
 class JsonTool {
   /// 字符串json解析
-  static dynamic? jsonStringToDynamic(String jsonString) {
+  static dynamic? _jsonStringToDynamic(
+    String jsonString,
+    ConfigurationsModel conf,
+  ) {
     try {
       return json.decode(jsonString);
     } catch (e) {
-      print('JSON 解析错误: $e');
       return null;
     }
+  }
+
+  /// 解析文档
+  static String? parseDocument(
+    String documentString,
+    ConfigurationsModel conf,
+  ) {
+    // 优化表格格式
+    var formattedDoc = documentString.replaceAll('            |', '|');
+    var tables = DocumentTool.extractMarkdownTables(formattedDoc);
+    var json = DocumentTool.extracJsonResponse(formattedDoc);
+    var apiPath = DocumentTool.extractApiPath(formattedDoc);
+    var title = DocumentTool.extractTitle(formattedDoc);
+    String? result = _generateModels(json, tables, title, apiPath, [], conf);
+    return result;
   }
 
   /// 异步获取数据
   static Future<String?> asyncGenerateModels(
     String? jsonStr,
+    String? mateModelInfoString,
     ConfigurationsModel conf,
   ) async {
-    return Future(() => _generateModels(jsonStr, conf));
+    return Future(() {
+      var title = DocumentTool.extractTitle(jsonStr ?? "");
+      if (title != null) {
+        var res = parseDocument(jsonStr ?? "", conf);
+        return res;
+      }
+      List<SwaggerTable> swaggerTables =
+          conf.isMate
+              ? SwaggerTool.extractBracesContent(mateModelInfoString)
+              : [];
+
+      var jsonRes = _generateModels(
+        jsonStr,
+        [],
+        null,
+        null,
+        swaggerTables,
+        conf,
+      );
+      return jsonRes;
+    });
   }
 
   /// 转换成模型信息
-  static String? _generateModels(String? jsonStr, ConfigurationsModel conf) {
+  static String? _generateModels(
+    String? jsonStr,
+    List<MarkdownTable> markdownTables,
+    String? documentTitle,
+    String? apiPath,
+    List<SwaggerTable> swaggerTables,
+    ConfigurationsModel conf,
+  ) {
     if (jsonStr == null || jsonStr.isEmpty) {
       return null;
     }
-    var dynamicObj = jsonStringToDynamic(jsonStr);
-    ModelInfo? modelInfo = _makeModel(dynamicObj, conf.modelName, '', conf);
+    var dynamicObj = _jsonStringToDynamic(jsonStr, conf);
+    ModelInfo? modelInfo = _makeModel(
+      dynamicObj,
+      conf.modelName,
+      '',
+      markdownTables,
+      documentTitle ?? "",
+      swaggerTables,
+      null,
+      conf,
+    );
     print(modelInfo);
     if (modelInfo != null) {
-      String modelStr = '\n' + _modelString(modelInfo, conf);
+      String modelStr = '\n${_modelString(modelInfo, conf)}';
+      bool hasHeader = false;
       if (conf.supportSmartCodable || conf.supportYYModel) {
+        hasHeader = true;
         if (conf.supportSmartCodable) {
           modelStr = modelStr.replaceRange(0, 0, "import SmartCodable\n");
         }
         if (conf.supportYYModel) {
           modelStr = modelStr.replaceRange(0, 0, "import YYModel\n");
         }
-      } else {
+      }
+      if (conf.supportObjc && !conf.supportYYModel) {
+        hasHeader = true;
         modelStr = modelStr.replaceRange(0, 0, "import Foundation\n");
       }
+      if (hasHeader) {
+        modelStr = modelStr.replaceRange(0, 0, "\n");
+      }
+      if (apiPath != null && apiPath.isNotEmpty) {
+        modelStr = modelStr.replaceRange(0, 0, "// API: ${apiPath}\n");
+      }
+      modelStr = modelStr.replaceRange(
+        0,
+        0,
+        "// 模型由model_maker自动生成，地址：https://gitlab.wekoi.cc/wtc/wl-client/model_maker\n",
+      );
       print(modelStr);
+
       return modelStr;
     }
     return null;
@@ -56,6 +130,10 @@ class JsonTool {
     dynamic map,
     String key,
     String superTypeName,
+    List<MarkdownTable> markdownTables,
+    String desc,
+    List<SwaggerTable> swaggerTables,
+    String? sameModelTypeName,
     ConfigurationsModel conf,
   ) {
     String selfTypeName =
@@ -64,7 +142,15 @@ class JsonTool {
       selfTypeName = defaultModelName;
     }
     selfTypeName = selfTypeName.trim();
-    ModelInfo modelInfo = ModelInfo(null, map, selfTypeName, [], []);
+    ModelInfo modelInfo = ModelInfo(
+      null,
+      map,
+      selfTypeName,
+      [],
+      [],
+      desc,
+      sameModelTypeName,
+    );
 
     List<ModelInfo> modelInfos = [];
     List<PropertyInfo> properties = [];
@@ -75,23 +161,23 @@ class JsonTool {
         selfTypeName,
         modelInfos,
         properties,
+        markdownTables,
+        swaggerTables,
         conf,
       );
     } else if (map is List) {
       List list = map;
-      if (!list.isEmpty) {
-        dynamic subObj = list.first;
-        if (subObj != null && subObj is Map) {
-          _makeSubModelsAndProperties(
-            subObj,
-            selfTypeName,
-            modelInfos,
-            properties,
-            conf,
-          );
-        } else {
-          return null;
-        }
+      dynamic subObj = list.firstOrNull;
+      if (subObj != null && subObj is Map) {
+        _makeSubModelsAndProperties(
+          subObj,
+          selfTypeName,
+          modelInfos,
+          properties,
+          markdownTables,
+          swaggerTables,
+          conf,
+        );
       } else {
         return null;
       }
@@ -109,39 +195,133 @@ class JsonTool {
     String selfTypeName,
     List<ModelInfo> modelInfos,
     List<PropertyInfo> properties,
+    List<MarkdownTable> markdownTables,
+    List<SwaggerTable> swaggerTables,
     ConfigurationsModel conf,
   ) {
+    MarkdownTable? table = markdownTables.firstWhereOrNull((table) {
+      var tableProperties =
+          table.rows.map((row) {
+            return row.property;
+          }).toSet();
+      var keys = m.keys.toSet();
+      return Collectiontool.areSetsEqual(tableProperties, keys);
+    });
+
+    SwaggerTable? swaggerTable;
+    if (conf.isMate) {
+      /// 解析Mate的Swagger文档
+      swaggerTable = swaggerTables.firstWhereOrNull((table) {
+        var tableProperties =
+            table.rows.map((row) {
+              return row.property;
+            }).toSet();
+        var keys = m.keys.toSet();
+        return Collectiontool.areSetsEqual(tableProperties, keys);
+      });
+    }
+
     for (var entry in m.entries) {
       String originKey = entry.key;
       dynamic value = entry.value;
       var key = originKey;
+      MarkdownRow? row;
+      SwaggerRow? swaggerRow;
+      if (table != null && table.rows.isNotEmpty) {
+        row = table.rows.firstWhereOrNull((row) {
+          return row.property == key;
+        });
+      }
+      if (table == null &&
+          conf.isMate &&
+          swaggerTable != null &&
+          swaggerTable.rows.isNotEmpty) {
+        swaggerRow = swaggerTable.rows.firstWhereOrNull((row) {
+          return row.property == key;
+        });
+      }
+
       if (value is! String &&
           value is! double &&
           value is! int &&
           value is! bool) {
-        var modelInfo = _makeModel(value, key, selfTypeName, conf);
+        var modelInfo = _makeModel(
+          value,
+          key,
+          selfTypeName,
+          markdownTables,
+          row?.desc ?? swaggerRow?.desc ?? "",
+          swaggerTables,
+          null,
+          conf,
+        );
+
+        /// 模型去重
+        if (modelInfo != null) {
+          var sameModel = modelInfos.firstWhereOrNull((elementModel) {
+            var etypes = elementModel.properties.map((p) => p.type).toSet();
+            var ekeys = elementModel.properties.map((p) => p.key).toSet();
+            var eIsList = elementModel.properties.map((p) => p.isList).toSet();
+            var types = modelInfo.properties.map((p) => p.type).toSet();
+            var keys = modelInfo.properties.map((p) => p.key).toSet();
+            var isList = elementModel.properties.map((p) => p.isList).toSet();
+            var res =
+                Collectiontool.areSetsEqual(etypes, types) &&
+                Collectiontool.areSetsEqual(ekeys, keys) &&
+                Collectiontool.areSetsEqual(eIsList, isList);
+            return res;
+          });
+          if (sameModel != null) {
+            modelInfo.sameModelTypeName = sameModel.typeName;
+          }
+        }
+
         if (modelInfo != null) {
           modelInfos.add(modelInfo);
         }
       }
 
-      bool shouldSetToStringDefault =
-          (_isInvalidList(value) || (value == null));
+      bool shouldSetToStringDefault = _isInvalidList(value) || value == null;
 
-      /// 不明类型，默认赋值String类型
+      var type = _typeName(key, value, selfTypeName);
+      if (shouldSetToStringDefault) {
+        type = "String";
+      } else {
+        var model = modelInfos.firstWhereOrNull((model) {
+          return model.typeName == type && model.sameModelTypeName != null;
+        });
+        var sameModelName = model?.sameModelTypeName;
+        if (sameModelName != null) {
+          type = sameModelName;
+        }
+      }
+
       var property = PropertyInfo(
         key,
-        shouldSetToStringDefault
-            ? "String"
-            : _typeName(key, value, selfTypeName),
-
-        /// 空list或null都给成String类型
+        type,
         value is List,
         true,
+        row?.desc ?? swaggerRow?.desc ?? "",
+        row?.type ?? swaggerRow?.type ?? "",
         shouldSetToStringDefault,
       );
-      properties.add(property);
+      if (property.key.isNotEmpty) {
+        properties.add(property);
+      }
     }
+  }
+
+  static String? _mapPropertyType(String typeFromMarkdown, String scheme) {
+    if (typeFromMarkdown.contains("array")) {
+      if (scheme.contains('integer')) {
+        return 'Int';
+      } else if (scheme.contains('double')) {
+        return 'Double';
+      } else if (scheme.contains('string')) {
+        return 'String';
+      }
+    }
+    return null;
   }
 
   /// 判断List是否非法
@@ -167,8 +347,8 @@ class JsonTool {
     } else {
       if (value is List) {
         List<dynamic> list = value;
-        if (list.length > 0) {
-          dynamic first = list[0];
+        if (list.isNotEmpty) {
+          dynamic first = list.first;
           return _typeName(key, first, superTypeName);
         }
       }
@@ -186,21 +366,40 @@ class JsonTool {
         typeName == "Bool";
   }
 
+  static bool _isObjcShouldDefaultValueType(String typeName) {
+    return typeName == "Int" || typeName == "Double" || typeName == "Bool";
+  }
+
   /// 模型信息转化成模型String
   static String _modelString(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
 
+    var desc = modelInfo.desc ?? "";
+    if (desc.isNotEmpty) {
+      modelStr += "/// $desc\n";
+    }
+
     /// 类声明所在的那一行
     String headerLine;
-    if (conf.isUsingStruct) {
-      headerLine = 'struct ${modelInfo.typeName} {';
+    if (conf.isUsingStruct || !conf.supportObjc) {
+      headerLine =
+          '${conf.isUsingStruct ? "struct" : "class"} ${modelInfo.typeName} {';
       if (conf.supportSmartCodable) {
         headerLine = headerLine.replaceFirst(' {', ': SmartCodable {');
+      } else if (conf.originCodable) {
+        headerLine = headerLine.replaceFirst(' {', ': Codable {');
+      }
+
+      /// 检查是否支持public
+      if (conf.supportPublic) {
+        headerLine = headerLine.replaceRange(0, 0, "public ");
       }
     } else {
       headerLine = 'class ${modelInfo.typeName}: NSObject {';
       if (conf.supportSmartCodable) {
         headerLine = headerLine.replaceFirst(' {', ', SmartCodable {');
+      } else if (conf.originCodable) {
+        headerLine = headerLine.replaceFirst(' {', ', Codable {');
       }
 
       /// 检查是否支持public
@@ -230,6 +429,10 @@ class JsonTool {
           conf.isCamelCase
               ? StringUtils.underscoreToCamelCase(property.key)
               : property.key;
+      if (property.desc.isNotEmpty) {
+        var propertyDesc = "    /// ${property.desc}";
+        modelStr += "\n$propertyDesc";
+      }
       var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
         propertyStr = "$varDisplay $propertyKey: [${property.type}]?";
@@ -242,7 +445,7 @@ class JsonTool {
                     ? '${property.type} = false'
                     : '${property.type}?');
 
-        propertyStr = "$varDisplay ${propertyKey}: $propertyTypeDisplay";
+        propertyStr = "$varDisplay $propertyKey: $propertyTypeDisplay";
       }
       if (property.isUnidentifiedType) {
         propertyStr +=
@@ -272,16 +475,94 @@ class JsonTool {
             continue;
           }
           mappingStr +=
-              "\n            CodingKeys.${camelKey} <--- \"${property.key}\",";
+              "\n            CodingKeys.$camelKey <--- \"${property.key}\",";
         }
         mappingStr += "\n        ]\n    }";
 
         modelStr += mappingStr;
       }
       if (!conf.isUsingStruct) {
-        modelStr +=
-            "\n\n    required ${conf.supportPublic ? 'public ' : ''}override init() {\n        super.init()\n    }";
+        if (conf.supportObjc) {
+          modelStr +=
+              "\n\n    ${conf.supportPublic ? 'public ' : ''}required override init() {\n        super.init()\n    }";
+        } else {
+          modelStr +=
+              "\n\n    ${conf.supportPublic ? 'public ' : ''}required init() {}";
+        }
+      } else {
+        modelStr += "\n\n    ${conf.supportPublic ? 'public ' : ''}init() {}";
       }
+    } else if (conf.originCodable) {
+      if (conf.isCamelCase && hasNeedMappingKeyProperties) {
+        var mappingStr =
+            "\n\n    ${conf.supportPublic ? 'public ' : ''}enum CodingKeys: String, CodingKey {";
+        for (var property in modelInfo.properties) {
+          var camelKey = StringUtils.underscoreToCamelCase(property.key);
+          mappingStr += "\n        case ${camelKey}";
+          if (camelKey != property.key) {
+            mappingStr += " = \"${property.key}\"";
+          }
+        }
+        mappingStr += "\n    }";
+        modelStr += mappingStr;
+      }
+
+      /// 安全反序列化
+      var decoderStr =
+          "\n\n    ${conf.isUsingStruct ? ' ' : 'required'} ${conf.supportPublic ? 'public ' : ''}init(from decoder: any Decoder) throws {";
+
+      decoderStr +=
+          "\n        let container = try decoder.container(keyedBy: CodingKeys.self)";
+      for (var property in modelInfo.properties) {
+        var camelKey = StringUtils.underscoreToCamelCase(property.key);
+        var isList = property.isList;
+        var type = property.type;
+        var key = conf.isCamelCase ? camelKey : property.key;
+        var typeStr = isList ? "[$type]" : type;
+        if (!conf.supportObjc || !_isObjcShouldDefaultValueType(type)) {
+          decoderStr +=
+              "\n        self.$key = try? container.decodeIfPresent($typeStr.self, forKey: .$key)";
+        } else {
+          decoderStr +=
+              "\n        self.$key = (try? container.decodeIfPresent($typeStr.self, forKey: .$key)) ?? ${(type == 'Int' || type == 'Double') ? "0" : "false"}";
+        }
+      }
+      if (!conf.isUsingStruct) {
+        decoderStr += "\n        super.init()";
+      }
+      decoderStr += "\n    }";
+      modelStr += decoderStr;
+    }
+
+    /// 如果支持构造方法
+    if (conf.supportConstruction && modelInfo.properties.isNotEmpty) {
+      String conStr = "\n\n    ${conf.supportPublic ? 'public ' : ''}init(";
+      String propertieRows = "";
+      for (int i = 0; i < modelInfo.properties.length; i += 1) {
+        var property = modelInfo.properties[i];
+        var key =
+            conf.isCamelCase
+                ? StringUtils.underscoreToCamelCase(property.key)
+                : property.key;
+        var isList = property.isList;
+        var type = property.type;
+        conStr += "$key: ";
+        conStr += isList ? "[$type]" : "$type";
+        if (!conf.supportObjc || !_isObjcShouldDefaultValueType(type)) {
+          conStr += "?";
+        }
+        if (i < modelInfo.properties.length - 1) {
+          conStr += ", ";
+        }
+        propertieRows += "\n        self.$key = $key";
+      }
+      conStr += ") {";
+      if (conf.supportObjc) {
+        conStr += "\n        super.init()";
+      }
+      conStr += propertieRows;
+      conStr += "\n    }";
+      modelStr += conStr;
     }
 
     /// 检查YYModel要求的映射关系
@@ -318,7 +599,7 @@ class JsonTool {
       if (conf.isCamelCase && hasNeedMappingKeyProperties) {
         // 如果是驼峰属性，需要开启映射
         var mappingStr =
-            "\n\n   ${conf.supportPublic ? 'public ' : ''} static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
+            "\n\n    ${conf.supportPublic ? 'public ' : ''}static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
           var camelKey = StringUtils.underscoreToCamelCase(property.key);
           if (camelKey == property.key) {
@@ -334,21 +615,43 @@ class JsonTool {
 
     /// 生成Objc可以调用的SmartCodable构造方法
     if (conf.objcObjcDeserialization) {
-      var deserializationSingle =
-          "\n    @objc class func instance(from dictionary: [String: Any]?) -> ${modelInfo.typeName}? {";
-      deserializationSingle +=
-          "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
-      modelStr += "\n$deserializationSingle";
+      if (conf.supportSmartCodable) {
+        var deserializationSingle =
+            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+        deserializationSingle +=
+            "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }";
+        deserializationSingle +=
+            "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
+        modelStr += "\n$deserializationSingle";
 
-      var deserializationArray =
-          "\n    @objc class func instances(from array: [Any]?) -> [${modelInfo.typeName}]? {";
-      deserializationArray +=
-          "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
-      modelStr += "\n$deserializationArray";
+        var deserializationArray =
+            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+        deserializationArray +=
+            "\n        guard let array = value as? [Any] else {\n            return nil\n        }";
+        deserializationArray +=
+            "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
+        modelStr += "\n$deserializationArray";
+      } else if (conf.originCodable) {
+        var deserializationSingle =
+            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+        deserializationSingle +=
+            "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: dictionary)\n            let res = try JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
+        modelStr += "\n$deserializationSingle";
+
+        var deserializationArray =
+            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+        deserializationArray +=
+            "\n        guard let array = value as? [Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: array)\n            let res = try JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
+        ;
+        modelStr += "\n$deserializationArray";
+      }
     }
 
     modelStr += "\n}";
     for (var subModelInfo in modelInfo.subModelInfos) {
+      if (subModelInfo.sameModelTypeName != null) {
+        continue;
+      }
       var subModelStr = _modelString(subModelInfo, conf);
       modelStr += "\n\n$subModelStr";
     }

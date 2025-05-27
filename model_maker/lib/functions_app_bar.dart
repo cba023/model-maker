@@ -16,10 +16,21 @@ class FunctionsAppBar extends StatefulWidget {
 
 class _FunctionsAppBarState extends State<FunctionsAppBar> {
   var textEditingController = TextEditingController();
+  late ConfigurationsModel _confModel;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _confModel = context.read<ConfigurationsModel>();
+    _confModel.setIsMateChanged((value) {
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var topHeight = 100.0;
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
+    confModel.uploadIsMate();
     return Container(
       height: topHeight,
       child: Row(
@@ -38,7 +49,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ),
           ),
           SizedBox(
-            width: 300,
+            width: 240,
             height: double.infinity,
             child: Container(
               child: Padding(
@@ -122,7 +133,16 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 },
               ),
               CheckboxWithText(
-                text: 'Objc可调用SmartCodable反序列化',
+                text: '原生Codable',
+                value: confModel.originCodable,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.originCodable = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '反序列化静态方法',
                 value: confModel.objcObjcDeserialization,
                 onChanged: (value) {
                   setState(() {
@@ -145,6 +165,25 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 onChanged: (value) {
                   setState(() {
                     confModel.supportPublic = value ?? true;
+                  });
+                },
+              ),
+
+              CheckboxWithText(
+                text: '生成构造方法',
+                value: confModel.supportConstruction,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportConstruction = value ?? false;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: 'Mate项目',
+                value: confModel.isMate,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.isMate = value ?? false;
                   });
                 },
               ),

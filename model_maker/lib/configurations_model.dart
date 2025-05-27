@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final defaultModelName = "Root";
 
@@ -19,6 +20,15 @@ class ConfigurationsModel extends ChangeNotifier {
   String _modelName = "";
   String _pastedJsonString = "";
 
+  /// 是否是Mate项目
+  bool _isMate = false;
+
+  /// 支持构造方法
+  bool _supportConstruction = false;
+
+  /// 原生Codable
+  bool _originCodable = false;
+
   // Getter 方法
   bool get supportSmartCodable => _supportSmartCodable;
   bool get isCamelCase => _isCamelCase;
@@ -29,11 +39,22 @@ class ConfigurationsModel extends ChangeNotifier {
   bool get objcObjcDeserialization => _objcObjcDeserialization;
   String get modelName => _modelName;
   String get pastedJsonString => _pastedJsonString;
+  bool get isMate => _isMate;
+  bool get supportConstruction => _supportConstruction;
+
+  bool get originCodable => _originCodable;
 
   // Setter 方法 - 修改值并通知监听器
   set supportSmartCodable(bool value) {
     if (_supportSmartCodable != value) {
       _supportSmartCodable = value;
+      if (!value) {
+        if (!originCodable) {
+          _objcObjcDeserialization = false;
+        }
+      } else {
+        _originCodable = false;
+      }
       notifyListeners();
     }
   }
@@ -63,7 +84,6 @@ class ConfigurationsModel extends ChangeNotifier {
       if (value) {
         _supportYYModel = false;
         _supportObjc = false;
-        _objcObjcDeserialization = false;
       }
       notifyListeners();
     }
@@ -91,9 +111,12 @@ class ConfigurationsModel extends ChangeNotifier {
     if (_objcObjcDeserialization != value) {
       _objcObjcDeserialization = value;
       if (value) {
-        _supportObjc = true;
-        _isUsingStruct = false;
-        _supportSmartCodable = true;
+        if (originCodable) {
+          _supportSmartCodable = false;
+        } else {
+          _supportSmartCodable = true;
+          _originCodable = false;
+        }
       }
       notifyListeners();
     }
@@ -113,6 +136,35 @@ class ConfigurationsModel extends ChangeNotifier {
     }
   }
 
+  set isMate(bool value) {
+    if (_isMate != value) {
+      _isMate = value;
+      saveIsMate(value);
+      notifyListeners();
+    }
+  }
+
+  set supportConstruction(bool value) {
+    if (_supportConstruction != value) {
+      _supportConstruction = value;
+      notifyListeners();
+    }
+  }
+
+  set originCodable(bool value) {
+    if (_originCodable != value) {
+      _originCodable = value;
+      if (value) {
+        _supportSmartCodable = false;
+      } else {
+        if (!_supportSmartCodable) {
+          _objcObjcDeserialization = false;
+        }
+      }
+      notifyListeners();
+    }
+  }
+
   void resetpastedJsonString() {
     if (_pastedJsonString.isNotEmpty) {
       _pastedJsonString = "";
@@ -126,17 +178,24 @@ class ConfigurationsModel extends ChangeNotifier {
     _onPastedJsonStringChanged = callback;
   }
 
-  // 重置所有配置为默认值
-  void reset() {
-    _supportSmartCodable = true;
-    _isCamelCase = true;
-    _supportObjc = true;
-    _isUsingStruct = false;
-    _supportYYModel = false;
-    _supportPublic = false;
-    _objcObjcDeserialization = false;
-    _modelName = defaultModelName;
-    _pastedJsonString = "";
-    notifyListeners();
+  Function(bool)? _isMateChanged;
+  void setIsMateChanged(Function(bool) callback) {
+    _isMateChanged = callback;
+  }
+
+  /// 从本地去读取是否是mate项目,并把状态更新到页面上
+  Future<void> uploadIsMate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isMate = prefs.getBool("isMate");
+    if (isMate != null && isMate == true) {
+      this.isMate = isMate;
+      _isMateChanged?.call(isMate);
+    }
+  }
+
+  /// 把isMate状态存入本地
+  Future<void> saveIsMate(bool isMate) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isMate', isMate);
   }
 }

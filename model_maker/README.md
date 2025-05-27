@@ -1,16 +1,10 @@
 # model_maker
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+iOS团队模型生成器
+    * 支持SmartCodable
+    * YYModel
+    * 支持Objc中调用构造方法
+    * 支持相同内容模型去重
+    * 支持Swagger接口文档解析
+        * 自动生成模型
+        * 自动增加注释

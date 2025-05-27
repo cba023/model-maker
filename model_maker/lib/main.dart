@@ -49,8 +49,11 @@ class _SplitWindowState extends State<SplitWindow> {
 
   final double _centerSeplineWidth = 12;
   var textEditingController = TextEditingController();
+  var bottomLeftTextEditingController = TextEditingController();
   var textResultController = TextEditingController();
   late ConfigurationsModel _confModel;
+  // 控制下面TextField是否显示的变量
+  bool _showBottomTextField = false;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -65,7 +68,14 @@ class _SplitWindowState extends State<SplitWindow> {
   /// 配置变更后刷新页面数据
   void _handleConfChange() {
     _debouncer.run(() {
-      JsonTool.asyncGenerateModels(textEditingController.text, _confModel)
+      setState(() {
+        _showBottomTextField = _confModel.isMate;
+      });
+      JsonTool.asyncGenerateModels(
+            textEditingController.text,
+            bottomLeftTextEditingController.text,
+            _confModel,
+          )
           .then((data) {
             setState(() {
               textResultController.text = data ?? '';
@@ -93,7 +103,6 @@ class _SplitWindowState extends State<SplitWindow> {
 
   @override
   Widget build(BuildContext context) {
-    final confModel = Provider.of<ConfigurationsModel>(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         return GestureDetector(
@@ -116,18 +125,50 @@ class _SplitWindowState extends State<SplitWindow> {
                         minHeight: double.infinity,
                         minWidth: double.infinity,
                       ),
-                      child: TextField(
-                        maxLines: null,
-                        decoration: InputDecoration(
-                          hintText: "请在此处输入json文本",
-                          hintStyle: TextStyle(color: Colors.grey),
-                          border: InputBorder.none,
-                        ),
-                        controller: textEditingController,
-                        onChanged: (value) {
-                          _confModel.resetpastedJsonString();
-                          _handleConfChange();
-                        },
+                      child: Column(
+                        children: [
+                          Expanded(
+                            flex: _showBottomTextField ? 1 : 2, // 显示时占1份，隐藏时占2份
+                            child: TextField(
+                              maxLines: null,
+                              decoration: InputDecoration(
+                                hintText: "请在此处输入json文本或接口文档",
+                                hintStyle: TextStyle(color: Colors.grey),
+                                border: InputBorder.none,
+                              ),
+                              controller: textEditingController,
+                              onChanged: (value) {
+                                _confModel.resetpastedJsonString();
+                                _handleConfChange();
+                              },
+                            ),
+                          ),
+
+                          // 下面的TextField，根据变量控制是否显示
+                          if (_showBottomTextField)
+                            SizedBox(
+                              height: 1,
+                              child: Container(
+                                color: const Color.fromARGB(221, 132, 131, 131),
+                              ),
+                            ),
+                          if (_showBottomTextField)
+                            Expanded(
+                              flex: 1, // 显示时占1份
+                              child: TextField(
+                                maxLines: null,
+                                decoration: InputDecoration(
+                                  hintText: "请在此处输入Mate接口文档中的模型信息",
+                                  hintStyle: TextStyle(color: Colors.grey),
+                                  border: InputBorder.none,
+                                ),
+                                controller: bottomLeftTextEditingController,
+                                onChanged: (value) {
+                                  _handleConfChange();
+                                },
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
