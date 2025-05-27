@@ -116,7 +116,7 @@ class JsonTool {
       modelStr = modelStr.replaceRange(
         0,
         0,
-        "// 模型由model_maker自动生成，地址：https://gitlab.wekoi.cc/wtc/wl-client/model_maker\n",
+        "// 模型由model_maker自动生成，地址：https://gitee.com/cba023/model-maker\n",
       );
       print(modelStr);
 
