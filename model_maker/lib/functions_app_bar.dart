@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 class FunctionsAppBar extends StatefulWidget {
   final ValueChanged<String>? onDataPasted; // 定义回调函数
 
-  const FunctionsAppBar({Key? key, this.onDataPasted}) : super(key: key);
+  const FunctionsAppBar({super.key, this.onDataPasted});
 
   @override
   State<FunctionsAppBar> createState() => _FunctionsAppBarState();
@@ -43,9 +43,9 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                   confModel.pastedJsonString = value ?? "";
                 });
               },
-              child: const Icon(Icons.paste),
               color: Colors.redAccent,
               height: double.infinity,
+              child: const Icon(Icons.paste),
             ),
           ),
           SizedBox(

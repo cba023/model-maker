@@ -12,7 +12,7 @@ final todoKey = '// TODO: ';
 /// JSON工具类
 class JsonTool {
   /// 字符串json解析
-  static dynamic? _jsonStringToDynamic(
+  static dynamic _jsonStringToDynamic(
     String jsonString,
     ConfigurationsModel conf,
   ) {
@@ -111,7 +111,7 @@ class JsonTool {
         modelStr = modelStr.replaceRange(0, 0, "\n");
       }
       if (apiPath != null && apiPath.isNotEmpty) {
-        modelStr = modelStr.replaceRange(0, 0, "// API: ${apiPath}\n");
+        modelStr = modelStr.replaceRange(0, 0, "// API: $apiPath\n");
       }
       modelStr = modelStr.replaceRange(
         0,
@@ -311,19 +311,6 @@ class JsonTool {
     }
   }
 
-  static String? _mapPropertyType(String typeFromMarkdown, String scheme) {
-    if (typeFromMarkdown.contains("array")) {
-      if (scheme.contains('integer')) {
-        return 'Int';
-      } else if (scheme.contains('double')) {
-        return 'Double';
-      } else if (scheme.contains('string')) {
-        return 'String';
-      }
-    }
-    return null;
-  }
-
   /// 判断List是否非法
   static _isInvalidList(dynamic value) {
     if (value is List) {
@@ -333,6 +320,11 @@ class JsonTool {
       }
     }
     return false;
+  }
+
+  /// 根据配置信息确定是否显示public前缀
+  static String _publicPan(ConfigurationsModel conf) {
+    return conf.supportPublic ? 'public ' : '';
   }
 
   static String _typeName(String key, dynamic value, String superTypeName) {
@@ -380,6 +372,54 @@ class JsonTool {
     }
 
     /// 类声明所在的那一行
+    modelStr += headerLine(modelInfo, conf);
+
+    /// 属性行
+    modelStr += properties(modelInfo, conf);
+
+    /// 是否有需要映射的属性
+    var hasNeedMappingKeyProperties =
+        modelInfo.properties
+            .where(
+              (property) =>
+                  property.key !=
+                  StringUtils.underscoreToCamelCase(property.key),
+            )
+            .isNotEmpty;
+
+    /// Codable
+    modelStr += codableMappingLines(
+      modelInfo,
+      conf,
+      hasNeedMappingKeyProperties,
+    );
+
+    /// YYModel
+    modelStr += yymodelMappingLines(
+      modelInfo,
+      conf,
+      hasNeedMappingKeyProperties,
+    );
+
+    /// 构造方法
+    modelStr += constructionMethod(modelInfo, conf);
+
+    /// 实例方法
+    modelStr += instanceMethod(modelInfo, conf);
+
+    modelStr += "\n}";
+    for (var subModelInfo in modelInfo.subModelInfos) {
+      if (subModelInfo.sameModelTypeName != null) {
+        continue;
+      }
+      var subModelStr = _modelString(subModelInfo, conf);
+      modelStr += "\n\n$subModelStr";
+    }
+    return modelStr;
+  }
+
+  /// 类声明所在的那一行
+  static String headerLine(ModelInfo modelInfo, ConfigurationsModel conf) {
     String headerLine;
     if (conf.isUsingStruct || !conf.supportObjc) {
       headerLine =
@@ -420,9 +460,12 @@ class JsonTool {
         headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
       }
     }
-    modelStr += headerLine;
+    return headerLine;
+  }
 
-    /// 属性行
+  /// 属性行列
+  static String properties(ModelInfo modelInfo, ConfigurationsModel conf) {
+    var propertiesStr = "";
     for (var property in modelInfo.properties) {
       String propertyStr;
       String propertyKey =
@@ -431,7 +474,7 @@ class JsonTool {
               : property.key;
       if (property.desc.isNotEmpty) {
         var propertyDesc = "    /// ${property.desc}";
-        modelStr += "\n$propertyDesc";
+        propertiesStr += "\n$propertyDesc";
       }
       var varDisplay = conf.supportPublic ? '    public var' : '    var';
       if (property.isList) {
@@ -451,24 +494,24 @@ class JsonTool {
         propertyStr +=
             " $todoKey 未识别`${property.key}`类型，预设为String，为避免出现程序崩溃，请手动处理";
       }
-      modelStr += "\n$propertyStr";
+      propertiesStr += "\n$propertyStr";
     }
+    return propertiesStr;
+  }
 
-    /// 是否有需要映射的属性
-    var hasNeedMappingKeyProperties =
-        modelInfo.properties
-            .where(
-              (property) =>
-                  property.key !=
-                  StringUtils.underscoreToCamelCase(property.key),
-            )
-            .isNotEmpty;
+  /// Codable映射相关
+  static String codableMappingLines(
+    ModelInfo modelInfo,
+    ConfigurationsModel conf,
+    bool hasNeedMappingKeyProperties,
+  ) {
+    var modelStr = "";
 
     /// 检查SmartCodable要求的映射关系
     if (conf.supportSmartCodable) {
       if (conf.isCamelCase && hasNeedMappingKeyProperties) {
         var mappingStr =
-            "\n\n    ${conf.supportPublic ? 'public ' : ''}static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
+            "\n\n    ${_publicPan(conf)}static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
         for (var property in modelInfo.properties) {
           var camelKey = StringUtils.underscoreToCamelCase(property.key);
           if (camelKey == property.key) {
@@ -484,21 +527,20 @@ class JsonTool {
       if (!conf.isUsingStruct) {
         if (conf.supportObjc) {
           modelStr +=
-              "\n\n    ${conf.supportPublic ? 'public ' : ''}required override init() {\n        super.init()\n    }";
+              "\n\n    ${_publicPan(conf)}required override init() {\n        super.init()\n    }";
         } else {
-          modelStr +=
-              "\n\n    ${conf.supportPublic ? 'public ' : ''}required init() {}";
+          modelStr += "\n\n    ${_publicPan(conf)}required init() {}";
         }
       } else {
-        modelStr += "\n\n    ${conf.supportPublic ? 'public ' : ''}init() {}";
+        modelStr += "\n\n    ${_publicPan(conf)}init() {}";
       }
     } else if (conf.originCodable) {
       if (conf.isCamelCase && hasNeedMappingKeyProperties) {
         var mappingStr =
-            "\n\n    ${conf.supportPublic ? 'public ' : ''}enum CodingKeys: String, CodingKey {";
+            "\n\n    ${_publicPan(conf)}enum CodingKeys: String, CodingKey {";
         for (var property in modelInfo.properties) {
           var camelKey = StringUtils.underscoreToCamelCase(property.key);
-          mappingStr += "\n        case ${camelKey}";
+          mappingStr += "\n        case $camelKey";
           if (camelKey != property.key) {
             mappingStr += " = \"${property.key}\"";
           }
@@ -509,7 +551,7 @@ class JsonTool {
 
       /// 安全反序列化
       var decoderStr =
-          "\n\n    ${conf.isUsingStruct ? ' ' : 'required'} ${conf.supportPublic ? 'public ' : ''}init(from decoder: any Decoder) throws {";
+          "\n\n    ${conf.isUsingStruct ? ' ' : 'required'} ${_publicPan(conf)}init(from decoder: any Decoder) throws {";
 
       decoderStr +=
           "\n        let container = try decoder.container(keyedBy: CodingKeys.self)";
@@ -533,39 +575,17 @@ class JsonTool {
       decoderStr += "\n    }";
       modelStr += decoderStr;
     }
+    return modelStr;
+  }
 
-    /// 如果支持构造方法
-    if (conf.supportConstruction && modelInfo.properties.isNotEmpty) {
-      String conStr = "\n\n    ${conf.supportPublic ? 'public ' : ''}init(";
-      String propertieRows = "";
-      for (int i = 0; i < modelInfo.properties.length; i += 1) {
-        var property = modelInfo.properties[i];
-        var key =
-            conf.isCamelCase
-                ? StringUtils.underscoreToCamelCase(property.key)
-                : property.key;
-        var isList = property.isList;
-        var type = property.type;
-        conStr += "$key: ";
-        conStr += isList ? "[$type]" : "$type";
-        if (!conf.supportObjc || !_isObjcShouldDefaultValueType(type)) {
-          conStr += "?";
-        }
-        if (i < modelInfo.properties.length - 1) {
-          conStr += ", ";
-        }
-        propertieRows += "\n        self.$key = $key";
-      }
-      conStr += ") {";
-      if (conf.supportObjc) {
-        conStr += "\n        super.init()";
-      }
-      conStr += propertieRows;
-      conStr += "\n    }";
-      modelStr += conStr;
-    }
+  /// YYModel的映射数据
+  static String yymodelMappingLines(
+    ModelInfo modelInfo,
+    ConfigurationsModel conf,
+    bool hasNeedMappingKeyProperties,
+  ) {
+    var modelStr = "";
 
-    /// 检查YYModel要求的映射关系
     if (conf.supportYYModel) {
       /// 是否有数组的子模型属性
       var hasListProperty = false;
@@ -580,7 +600,7 @@ class JsonTool {
       }
       if (hasListProperty) {
         var mappingStr =
-            "\n\n    ${conf.supportPublic ? 'public ' : ''}static func modelContainerPropertyGenericClass() -> [String : Any]? {\n        return [";
+            "\n\n    ${_publicPan(conf)}static func modelContainerPropertyGenericClass() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
           if (_isBasicType(property.type) || !property.isList) {
             continue;
@@ -599,7 +619,7 @@ class JsonTool {
       if (conf.isCamelCase && hasNeedMappingKeyProperties) {
         // 如果是驼峰属性，需要开启映射
         var mappingStr =
-            "\n\n    ${conf.supportPublic ? 'public ' : ''}static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
+            "\n\n    ${_publicPan(conf)}static func modelCustomPropertyMapper() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
           var camelKey = StringUtils.underscoreToCamelCase(property.key);
           if (camelKey == property.key) {
@@ -612,12 +632,54 @@ class JsonTool {
         modelStr += mappingStr;
       }
     }
+    return modelStr;
+  }
 
-    /// 生成Objc可以调用的SmartCodable构造方法
+  /// 构造方法
+  static String constructionMethod(
+    ModelInfo modelInfo,
+    ConfigurationsModel conf,
+  ) {
+    var modelStr = "";
+    if (conf.supportConstruction && modelInfo.properties.isNotEmpty) {
+      String conStr = "\n\n    ${_publicPan(conf)}init(";
+      String propertieRows = "";
+      for (int i = 0; i < modelInfo.properties.length; i += 1) {
+        var property = modelInfo.properties[i];
+        var key =
+            conf.isCamelCase
+                ? StringUtils.underscoreToCamelCase(property.key)
+                : property.key;
+        var isList = property.isList;
+        var type = property.type;
+        conStr += "$key: ";
+        conStr += isList ? "[$type]" : type;
+        if (!conf.supportObjc || !_isObjcShouldDefaultValueType(type)) {
+          conStr += "?";
+        }
+        if (i < modelInfo.properties.length - 1) {
+          conStr += ", ";
+        }
+        propertieRows += "\n        self.$key = $key";
+      }
+      conStr += ") {";
+      if (conf.supportObjc) {
+        conStr += "\n        super.init()";
+      }
+      conStr += propertieRows;
+      conStr += "\n    }";
+      modelStr += conStr;
+    }
+    return modelStr;
+  }
+
+  /// 生成Objc可以调用的SmartCodable实例方法
+  static String instanceMethod(ModelInfo modelInfo, ConfigurationsModel conf) {
+    var modelStr = "";
     if (conf.objcObjcDeserialization) {
       if (conf.supportSmartCodable) {
         var deserializationSingle =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }";
         deserializationSingle +=
@@ -625,7 +687,7 @@ class JsonTool {
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
             "\n        guard let array = value as? [Any] else {\n            return nil\n        }";
         deserializationArray +=
@@ -633,27 +695,17 @@ class JsonTool {
         modelStr += "\n$deserializationArray";
       } else if (conf.originCodable) {
         var deserializationSingle =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: dictionary)\n            let res = try JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${conf.supportPublic ? 'public ' : ''}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
             "\n        guard let array = value as? [Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: array)\n            let res = try JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
-        ;
         modelStr += "\n$deserializationArray";
       }
-    }
-
-    modelStr += "\n}";
-    for (var subModelInfo in modelInfo.subModelInfos) {
-      if (subModelInfo.sameModelTypeName != null) {
-        continue;
-      }
-      var subModelStr = _modelString(subModelInfo, conf);
-      modelStr += "\n\n$subModelStr";
     }
     return modelStr;
   }

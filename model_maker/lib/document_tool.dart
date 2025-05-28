@@ -1,5 +1,3 @@
-import 'dart:io';
-
 class MarkdownTable {
   final MarkdownRow headers;
   final List<MarkdownRow> rows;
