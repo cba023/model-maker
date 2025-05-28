@@ -103,7 +103,7 @@ class JsonTool {
           modelStr = modelStr.replaceRange(0, 0, "import YYModel\n");
         }
       }
-      if (conf.supportObjc && !conf.supportYYModel) {
+      if (!conf.supportSmartCodable && !conf.supportYYModel) {
         hasHeader = true;
         modelStr = modelStr.replaceRange(0, 0, "import Foundation\n");
       }
