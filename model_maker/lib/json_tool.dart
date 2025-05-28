@@ -93,9 +93,7 @@ class JsonTool {
     print(modelInfo);
     if (modelInfo != null) {
       String modelStr = '\n${_modelString(modelInfo, conf)}';
-      bool hasHeader = false;
       if (conf.supportSmartCodable || conf.supportYYModel) {
-        hasHeader = true;
         if (conf.supportSmartCodable) {
           modelStr = modelStr.replaceRange(0, 0, "import SmartCodable\n");
         }
@@ -104,20 +102,11 @@ class JsonTool {
         }
       }
       if (!conf.supportSmartCodable && !conf.supportYYModel) {
-        hasHeader = true;
         modelStr = modelStr.replaceRange(0, 0, "import Foundation\n");
-      }
-      if (hasHeader) {
-        modelStr = modelStr.replaceRange(0, 0, "\n");
       }
       if (apiPath != null && apiPath.isNotEmpty) {
         modelStr = modelStr.replaceRange(0, 0, "// API: $apiPath\n");
       }
-      modelStr = modelStr.replaceRange(
-        0,
-        0,
-        "// 模型由model_maker自动生成，地址：https://gitee.com/cba023/model-maker\n",
-      );
       print(modelStr);
 
       return modelStr;
@@ -372,10 +361,10 @@ class JsonTool {
     }
 
     /// 类声明所在的那一行
-    modelStr += headerLine(modelInfo, conf);
+    modelStr += _headerLine(modelInfo, conf);
 
     /// 属性行
-    modelStr += properties(modelInfo, conf);
+    modelStr += _properties(modelInfo, conf);
 
     /// 是否有需要映射的属性
     var hasNeedMappingKeyProperties =
@@ -388,24 +377,24 @@ class JsonTool {
             .isNotEmpty;
 
     /// Codable
-    modelStr += codableMappingLines(
+    modelStr += _codableMappingLines(
       modelInfo,
       conf,
       hasNeedMappingKeyProperties,
     );
 
     /// YYModel
-    modelStr += yymodelMappingLines(
+    modelStr += _yymodelMappingLines(
       modelInfo,
       conf,
       hasNeedMappingKeyProperties,
     );
 
     /// 构造方法
-    modelStr += constructionMethod(modelInfo, conf);
+    modelStr += _constructionMethod(modelInfo, conf);
 
     /// 实例方法
-    modelStr += instanceMethod(modelInfo, conf);
+    modelStr += _instanceMethod(modelInfo, conf);
 
     modelStr += "\n}";
     for (var subModelInfo in modelInfo.subModelInfos) {
@@ -419,7 +408,7 @@ class JsonTool {
   }
 
   /// 类声明所在的那一行
-  static String headerLine(ModelInfo modelInfo, ConfigurationsModel conf) {
+  static String _headerLine(ModelInfo modelInfo, ConfigurationsModel conf) {
     String headerLine;
     if (conf.isUsingStruct || !conf.supportObjc) {
       headerLine =
@@ -464,7 +453,7 @@ class JsonTool {
   }
 
   /// 属性行列
-  static String properties(ModelInfo modelInfo, ConfigurationsModel conf) {
+  static String _properties(ModelInfo modelInfo, ConfigurationsModel conf) {
     var propertiesStr = "";
     for (var property in modelInfo.properties) {
       String propertyStr;
@@ -500,7 +489,7 @@ class JsonTool {
   }
 
   /// Codable映射相关
-  static String codableMappingLines(
+  static String _codableMappingLines(
     ModelInfo modelInfo,
     ConfigurationsModel conf,
     bool hasNeedMappingKeyProperties,
@@ -579,7 +568,7 @@ class JsonTool {
   }
 
   /// YYModel的映射数据
-  static String yymodelMappingLines(
+  static String _yymodelMappingLines(
     ModelInfo modelInfo,
     ConfigurationsModel conf,
     bool hasNeedMappingKeyProperties,
@@ -636,7 +625,7 @@ class JsonTool {
   }
 
   /// 构造方法
-  static String constructionMethod(
+  static String _constructionMethod(
     ModelInfo modelInfo,
     ConfigurationsModel conf,
   ) {
@@ -674,7 +663,7 @@ class JsonTool {
   }
 
   /// 生成Objc可以调用的SmartCodable实例方法
-  static String instanceMethod(ModelInfo modelInfo, ConfigurationsModel conf) {
+  static String _instanceMethod(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
     if (conf.objcObjcDeserialization) {
       if (conf.supportSmartCodable) {
