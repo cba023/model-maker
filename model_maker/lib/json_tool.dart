@@ -550,7 +550,9 @@ class JsonTool {
         var type = property.type;
         var key = conf.isCamelCase ? camelKey : property.key;
         var typeStr = isList ? "[$type]" : type;
-        if (!conf.supportObjc || !_isObjcShouldDefaultValueType(type)) {
+        if (!conf.supportObjc ||
+            !_isObjcShouldDefaultValueType(type) ||
+            property.isList) {
           decoderStr +=
               "\n        self.$key = try? container.decodeIfPresent($typeStr.self, forKey: .$key)";
         } else {
@@ -558,7 +560,7 @@ class JsonTool {
               "\n        self.$key = (try? container.decodeIfPresent($typeStr.self, forKey: .$key)) ?? ${(type == 'Int' || type == 'Double') ? "0" : "false"}";
         }
       }
-      if (!conf.isUsingStruct) {
+      if (!conf.isUsingStruct && conf.supportObjc) {
         decoderStr += "\n        super.init()";
       }
       decoderStr += "\n    }";
@@ -665,10 +667,11 @@ class JsonTool {
   /// 生成Objc可以调用的SmartCodable实例方法
   static String _instanceMethod(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
+    final objcSupportPan = '${conf.supportObjc ? "@objc " : ""}"';
     if (conf.objcObjcDeserialization) {
       if (conf.supportSmartCodable) {
         var deserializationSingle =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+            "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }";
         deserializationSingle +=
@@ -676,7 +679,7 @@ class JsonTool {
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+            "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
             "\n        guard let array = value as? [Any] else {\n            return nil\n        }";
         deserializationArray +=
@@ -684,13 +687,13 @@ class JsonTool {
         modelStr += "\n$deserializationArray";
       } else if (conf.originCodable) {
         var deserializationSingle =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+            "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: dictionary)\n            let res = try JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
-            "\n    ${conf.supportObjc ? "@objc " : ""}${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+            "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
             "\n        guard let array = value as? [Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: array)\n            let res = try JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
         modelStr += "\n$deserializationArray";
