@@ -667,7 +667,7 @@ class JsonTool {
   /// 生成Objc可以调用的SmartCodable实例方法
   static String _instanceMethod(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
-    final objcSupportPan = '${conf.supportObjc ? "@objc " : ""}"';
+    final objcSupportPan = conf.supportObjc ? "@objc " : "";
     if (conf.objcObjcDeserialization) {
       if (conf.supportSmartCodable) {
         var deserializationSingle =
