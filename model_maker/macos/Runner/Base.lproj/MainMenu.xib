@@ -68,22 +68,6 @@
                 </menuItem>
                 <menuItem title="查看源码" id="EPT-qC-fAb">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="查看源码" id="zl7-82-F10">
-                        <items>
-                            <menuItem title="GitLab" id="NMg-4C-RM0">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="openRespUrl:" target="Voe-Tx-rLC" id="hEz-LT-9cG"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="码云" id="FNN-cx-nzj">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="openGiteeUrl:" target="Voe-Tx-rLC" id="9xI-5m-vqB"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
                 </menuItem>
             </items>
             <point key="canvasLocation" x="142" y="-258"/>
