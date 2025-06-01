@@ -13,7 +13,6 @@ class MarkdownRow {
   final String desc;
   final String type;
   final String scheme;
-
   MarkdownRow(this.property, this.desc, this.type, this.scheme);
 }
 
@@ -22,7 +21,6 @@ class DocumentTool {
   static List<MarkdownTable> extractMarkdownTables(String content) {
     const columnCount = 4; // 固定4列
     final tables = <MarkdownTable>[];
-
     // 正则表达式（严格匹配4列）
     final rowPattern = RegExp(
       r'^\s*\|?\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|?\s*$',

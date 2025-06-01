@@ -26,7 +26,14 @@ class CheckboxWithText extends StatelessWidget {
     return Row(
       mainAxisAlignment: mainAxisAlignment,
       children: [
-        Checkbox(value: value, onChanged: onChanged, activeColor: activeColor),
+        Container(
+          height: 32,
+          child: Checkbox(
+            value: value,
+            onChanged: onChanged,
+            activeColor: activeColor,
+          ),
+        ),
         SizedBox(width: spacing),
         Text(text, style: textStyle ?? Theme.of(context).textTheme.bodyMedium),
       ],
