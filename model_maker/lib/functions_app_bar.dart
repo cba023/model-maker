@@ -6,9 +6,7 @@ import 'package:model_maker/string_utils.dart';
 import 'package:provider/provider.dart';
 
 class FunctionsAppBar extends StatefulWidget {
-  final ValueChanged<String>? onDataPasted; // 定义回调函数
-
-  const FunctionsAppBar({super.key, this.onDataPasted});
+  const FunctionsAppBar({super.key});
 
   @override
   State<FunctionsAppBar> createState() => _FunctionsAppBarState();
@@ -28,180 +26,210 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
 
   @override
   Widget build(BuildContext context) {
-    var topHeight = 100.0;
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
     confModel.uploadIsMate();
     return Container(
-      height: topHeight,
-      child: Row(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(4),
-            child: MaterialButton(
+      width: double.infinity,
+      color: Colors.blueGrey,
+      child: Padding(
+        padding: EdgeInsets.all(8),
+        child: Row(
+          children: [
+            MaterialButton(
               onPressed: () {
                 _readClipboard().then((value) {
                   confModel.pastedJsonString = value ?? "";
                 });
               },
               color: Colors.redAccent,
-              height: double.infinity,
+              height: 100,
+              minWidth: 90,
               child: const Icon(Icons.paste),
             ),
-          ),
-          SizedBox(
-            width: 240,
-            height: double.infinity,
-            child: Container(
-              child: Padding(
-                padding: EdgeInsets.all(4),
-                child: Container(
-                  color: Colors.yellowAccent,
-                  child: Padding(
-                    padding: EdgeInsets.all(6),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 1),
-                        Text('配置模型名称:', style: TextStyle(fontSize: 16)),
-                        SizedBox(height: 6),
-                        Container(
-                          color: Colors.white60,
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  SizedBox(
+                    width: 240,
+                    height: 100,
+                    child: Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Container(
+                          color: Colors.yellowAccent,
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                            child: TextField(
-                              maxLines: 1,
-                              decoration: InputDecoration(
-                                hintText: "请输入根模型名，默认Root",
-                                hintStyle: TextStyle(color: Colors.grey),
-                                border: InputBorder.none,
-                              ),
-                              controller: textEditingController,
-                              onChanged: (value) {
-                                setState(() {
-                                  confModel.modelName = value;
-                                });
-                              },
+                            padding: EdgeInsets.all(6),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 1),
+                                Text('配置模型名称:', style: TextStyle(fontSize: 16)),
+                                SizedBox(height: 4),
+                                Container(
+                                  color: Colors.white60,
+                                  child: Padding(
+                                    padding: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                                    child: TextField(
+                                      maxLines: 1,
+                                      decoration: InputDecoration(
+                                        hintText: "请输入根模型名，默认Root",
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey,
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
+                                      controller: textEditingController,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          confModel.modelName = value;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Column(
+                      children: [
+                        CheckboxWithText(
+                          text: '使用驼峰命名',
+                          value: confModel.isCamelCase,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.isCamelCase = value ?? true;
+                            });
+                          },
+                        ),
+                        CheckboxWithText(
+                          text: '使用结构体',
+                          value: confModel.isUsingStruct,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.isUsingStruct = value ?? true;
+                            });
+                          },
+                        ),
+                        CheckboxWithText(
+                          text: '支持Objc',
+                          value: confModel.supportObjc,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.supportObjc = value ?? true;
+                            });
+                          },
                         ),
                       ],
                     ),
                   ),
-                ),
+                  Container(
+                    width: 200,
+                    child: Column(
+                      children: [
+                        CheckboxWithText(
+                          text: '支持SmartCodable',
+                          value: confModel.supportSmartCodable,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.supportSmartCodable = value ?? true;
+                            });
+                          },
+                        ),
+                        CheckboxWithText(
+                          text: '原生Codable',
+                          value: confModel.originCodable,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.originCodable = value ?? true;
+                            });
+                          },
+                        ),
+                        CheckboxWithText(
+                          text: '反序列化静态方法',
+                          value: confModel.objcObjcDeserialization,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.objcObjcDeserialization = value ?? true;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Column(
+                      children: [
+                        CheckboxWithText(
+                          text: '支持YYModel',
+                          value: confModel.supportYYModel,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.supportYYModel = value ?? true;
+                            });
+                          },
+                        ),
+                        CheckboxWithText(
+                          text: '支持public',
+                          value: confModel.supportPublic,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.supportPublic = value ?? true;
+                            });
+                          },
+                        ),
+
+                        CheckboxWithText(
+                          text: '生成构造方法',
+                          value: confModel.supportConstruction,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.supportConstruction = value ?? false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Column(
+                      children: [
+                        CheckboxWithText(
+                          text: 'Mate项目',
+                          value: confModel.isMate,
+                          onChanged: (value) {
+                            setState(() {
+                              confModel.isMate = value ?? false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          Wrap(
-            direction: Axis.vertical,
-            runSpacing: 30,
-            children: [
-              CheckboxWithText(
-                text: '使用驼峰命名',
-                value: confModel.isCamelCase,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.isCamelCase = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '使用结构体',
-                value: confModel.isUsingStruct,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.isUsingStruct = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '支持Objc',
-                value: confModel.supportObjc,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportObjc = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '支持SmartCodable',
-                value: confModel.supportSmartCodable,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportSmartCodable = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '原生Codable',
-                value: confModel.originCodable,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.originCodable = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '反序列化静态方法',
-                value: confModel.objcObjcDeserialization,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.objcObjcDeserialization = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '支持YYModel',
-                value: confModel.supportYYModel,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportYYModel = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '支持public',
-                value: confModel.supportPublic,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportPublic = value ?? true;
-                  });
-                },
-              ),
-
-              CheckboxWithText(
-                text: '生成构造方法',
-                value: confModel.supportConstruction,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportConstruction = value ?? false;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: 'Mate项目',
-                value: confModel.isMate,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.isMate = value ?? false;
-                  });
-                },
-              ),
-            ],
-          ),
-          Spacer(),
-          Padding(
-            padding: EdgeInsets.all(4),
-            child: MaterialButton(
+            MaterialButton(
               onPressed: () {
                 _copyToClipboard(context, outputResult ?? "");
               },
               child: const Icon(Icons.copy),
               color: Colors.greenAccent,
-              height: double.infinity,
+              height: 100,
+              minWidth: 90,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -213,12 +241,14 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     var hint = "复制成功！";
     var todosCount = StringUtils.countofTodo(text);
     if (todosCount > 0) {
-      hint += "注意有$todosCount处TODO项，它们是未识别类型，已经预设为String，为避免出现程序崩溃，请手动处理";
+      hint += "注意有$todosCount处TODO项是未识别类型，已经预设为String，为避免出现程序崩溃，请手动处理";
+      _showDialog(context, hint);
+    } else {
+      // 显示复制成功的提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(hint), duration: Duration(seconds: 1)),
+      );
     }
-    // 显示复制成功的提示
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(hint), duration: Duration(seconds: 1)),
-    );
   }
 
   Future<String?> _readClipboard() async {
@@ -244,5 +274,72 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
       );
       return null;
     }
+  }
+
+  void _showDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '温馨提示',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      message,
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            '我知道了',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
   }
 }

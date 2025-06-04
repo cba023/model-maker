@@ -19,19 +19,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(appBar: _buildAppBar(), body: SplitWindow(key: key)),
-    );
+    return MaterialApp(home: Scaffold(body: _buildHome(context)));
   }
 
-  /// appBar
-  AppBar _buildAppBar() {
-    double height = 115;
-    return AppBar(
-      backgroundColor: Colors.blueGrey,
-      toolbarHeight: height,
-      elevation: 0,
-      title: FunctionsAppBar(),
+  Widget _buildHome(BuildContext context) {
+    return Column(
+      children: [
+        FunctionsAppBar(),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            child: SplitWindow(key: key),
+          ),
+        ),
+      ],
     );
   }
 }

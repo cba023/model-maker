@@ -10,4 +10,11 @@ class AppDelegate: FlutterAppDelegate {
     override func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true
     }
+    
+    @IBAction func openRespUrl(_ sender: Any) {
+        if let url = URL(string: "https://gitlab.wekoi.cc/wtc/wl-client/model_maker") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
 }
