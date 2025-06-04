@@ -541,7 +541,7 @@ class JsonTool {
       if (modelInfo.properties.isNotEmpty) {
         /// 安全反序列化
         var decoderStr =
-            "\n\n    ${conf.isUsingStruct ? ' ' : 'required'} ${_publicPan(conf)}init(from decoder: any Decoder) throws {";
+            "\n\n    ${_publicPan(conf)}${conf.isUsingStruct ? '' : 'required '}init(from decoder: any Decoder) throws {";
 
         decoderStr +=
             "\n        let container = try decoder.container(keyedBy: CodingKeys.self)";
