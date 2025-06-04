@@ -538,33 +538,35 @@ class JsonTool {
         modelStr += mappingStr;
       }
 
-      /// 安全反序列化
-      var decoderStr =
-          "\n\n    ${conf.isUsingStruct ? ' ' : 'required'} ${_publicPan(conf)}init(from decoder: any Decoder) throws {";
+      if (modelInfo.properties.isNotEmpty) {
+        /// 安全反序列化
+        var decoderStr =
+            "\n\n    ${conf.isUsingStruct ? ' ' : 'required'} ${_publicPan(conf)}init(from decoder: any Decoder) throws {";
 
-      decoderStr +=
-          "\n        let container = try decoder.container(keyedBy: CodingKeys.self)";
-      for (var property in modelInfo.properties) {
-        var camelKey = StringUtils.underscoreToCamelCase(property.key);
-        var isList = property.isList;
-        var type = property.type;
-        var key = conf.isCamelCase ? camelKey : property.key;
-        var typeStr = isList ? "[$type]" : type;
-        if (!conf.supportObjc ||
-            !_isObjcShouldDefaultValueType(type) ||
-            property.isList) {
-          decoderStr +=
-              "\n        self.$key = try? container.decodeIfPresent($typeStr.self, forKey: .$key)";
-        } else {
-          decoderStr +=
-              "\n        self.$key = (try? container.decodeIfPresent($typeStr.self, forKey: .$key)) ?? ${(type == 'Int' || type == 'Double') ? "0" : "false"}";
+        decoderStr +=
+            "\n        let container = try decoder.container(keyedBy: CodingKeys.self)";
+        for (var property in modelInfo.properties) {
+          var camelKey = StringUtils.underscoreToCamelCase(property.key);
+          var isList = property.isList;
+          var type = property.type;
+          var key = conf.isCamelCase ? camelKey : property.key;
+          var typeStr = isList ? "[$type]" : type;
+          if (!conf.supportObjc ||
+              !_isObjcShouldDefaultValueType(type) ||
+              property.isList) {
+            decoderStr +=
+                "\n        self.$key = try? container.decodeIfPresent($typeStr.self, forKey: .$key)";
+          } else {
+            decoderStr +=
+                "\n        self.$key = (try? container.decodeIfPresent($typeStr.self, forKey: .$key)) ?? ${(type == 'Int' || type == 'Double') ? "0" : "false"}";
+          }
         }
+        if (!conf.isUsingStruct && conf.supportObjc) {
+          decoderStr += "\n        super.init()";
+        }
+        decoderStr += "\n    }";
+        modelStr += decoderStr;
       }
-      if (!conf.isUsingStruct && conf.supportObjc) {
-        decoderStr += "\n        super.init()";
-      }
-      decoderStr += "\n    }";
-      modelStr += decoderStr;
     }
     return modelStr;
   }

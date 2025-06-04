@@ -28,213 +28,258 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
   Widget build(BuildContext context) {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
     confModel.uploadIsMate();
-    return Container(
-      width: double.infinity,
-      color: Colors.blueGrey,
-      child: Padding(
-        padding: EdgeInsets.all(8),
-        child: Row(
-          children: [
-            MaterialButton(
-              onPressed: () {
-                _readClipboard().then((value) {
-                  confModel.pastedJsonString = value ?? "";
-                });
-              },
-              color: Colors.redAccent,
-              height: 100,
-              minWidth: 90,
-              child: const Icon(Icons.paste),
-            ),
-            Expanded(
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  SizedBox(
-                    width: 240,
-                    height: 100,
-                    child: Container(
-                      child: Padding(
-                        padding: EdgeInsets.all(4),
-                        child: Container(
-                          color: Colors.yellowAccent,
-                          child: Padding(
-                            padding: EdgeInsets.all(6),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 1),
-                                Text('配置模型名称:', style: TextStyle(fontSize: 16)),
-                                SizedBox(height: 4),
-                                Container(
-                                  color: Colors.white60,
-                                  child: Padding(
-                                    padding: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                                    child: TextField(
-                                      maxLines: 1,
-                                      decoration: InputDecoration(
-                                        hintText: "请输入根模型名，默认Root",
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                        ),
-                                        border: InputBorder.none,
-                                      ),
-                                      controller: textEditingController,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          confModel.modelName = value;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 200,
-                    child: Column(
-                      children: [
-                        CheckboxWithText(
-                          text: '使用驼峰命名',
-                          value: confModel.isCamelCase,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.isCamelCase = value ?? true;
-                            });
-                          },
-                        ),
-                        CheckboxWithText(
-                          text: '使用结构体',
-                          value: confModel.isUsingStruct,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.isUsingStruct = value ?? true;
-                            });
-                          },
-                        ),
-                        CheckboxWithText(
-                          text: '支持Objc',
-                          value: confModel.supportObjc,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.supportObjc = value ?? true;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 200,
-                    child: Column(
-                      children: [
-                        CheckboxWithText(
-                          text: '支持SmartCodable',
-                          value: confModel.supportSmartCodable,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.supportSmartCodable = value ?? true;
-                            });
-                          },
-                        ),
-                        CheckboxWithText(
-                          text: '原生Codable',
-                          value: confModel.originCodable,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.originCodable = value ?? true;
-                            });
-                          },
-                        ),
-                        CheckboxWithText(
-                          text: '反序列化静态方法',
-                          value: confModel.objcObjcDeserialization,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.objcObjcDeserialization = value ?? true;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 200,
-                    child: Column(
-                      children: [
-                        CheckboxWithText(
-                          text: '支持YYModel',
-                          value: confModel.supportYYModel,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.supportYYModel = value ?? true;
-                            });
-                          },
-                        ),
-                        CheckboxWithText(
-                          text: '支持public',
-                          value: confModel.supportPublic,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.supportPublic = value ?? true;
-                            });
-                          },
-                        ),
 
-                        CheckboxWithText(
-                          text: '生成构造方法',
-                          value: confModel.supportConstruction,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.supportConstruction = value ?? false;
-                            });
-                          },
-                        ),
-                      ],
+    final unitWidth = 175.0;
+    final buttonWidth = 90.0;
+
+    /// 粘贴按钮
+    final pasteWidget = Padding(
+      padding: EdgeInsets.all(4),
+      child: MaterialButton(
+        onPressed: () {
+          _readClipboard().then((value) {
+            confModel.pastedJsonString = value ?? "";
+          });
+        },
+        color: Colors.redAccent,
+        height: 100,
+        minWidth: buttonWidth,
+        child: const Icon(Icons.paste),
+      ),
+    );
+
+    final inputNameWidget = Container(
+      child: Padding(
+        padding: EdgeInsets.all(4),
+        child: Container(
+          color: Colors.yellowAccent,
+          child: Padding(
+            padding: EdgeInsets.all(6),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 1),
+                Text('配置模型名称:', style: TextStyle(fontSize: 16)),
+                SizedBox(height: 4),
+                Container(
+                  color: Colors.white60,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(6, 1, 6, 1),
+                    child: TextField(
+                      maxLines: 1,
+                      decoration: InputDecoration(
+                        hintText: "请输入根模型名，默认Root",
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                      ),
+                      controller: textEditingController,
+                      onChanged: (value) {
+                        setState(() {
+                          confModel.modelName = value;
+                        });
+                      },
                     ),
                   ),
-                  Container(
-                    width: 200,
-                    child: Column(
-                      children: [
-                        CheckboxWithText(
-                          text: 'Mate项目',
-                          value: confModel.isMate,
-                          onChanged: (value) {
-                            setState(() {
-                              confModel.isMate = value ?? false;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            MaterialButton(
-              onPressed: () {
-                _copyToClipboard(context, outputResult ?? "");
-              },
-              child: const Icon(Icons.copy),
-              color: Colors.greenAccent,
-              height: 100,
-              minWidth: 90,
-            ),
-          ],
+          ),
         ),
       ),
     );
+
+    /// 中间内容
+    final centerContent = Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        Container(
+          width: unitWidth,
+          child: Column(
+            children: [
+              CheckboxWithText(
+                text: '使用驼峰命名',
+                value: confModel.isCamelCase,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.isCamelCase = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '使用结构体',
+                value: confModel.isUsingStruct,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.isUsingStruct = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '支持Objc',
+                value: confModel.supportObjc,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportObjc = value ?? true;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: unitWidth,
+          child: Column(
+            children: [
+              CheckboxWithText(
+                text: '支持SmartCodable',
+                value: confModel.supportSmartCodable,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportSmartCodable = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '原生Codable',
+                value: confModel.originCodable,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.originCodable = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '反序列化静态方法',
+                value: confModel.objcObjcDeserialization,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.objcObjcDeserialization = value ?? true;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: unitWidth,
+          child: Column(
+            children: [
+              CheckboxWithText(
+                text: '支持YYModel',
+                value: confModel.supportYYModel,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportYYModel = value ?? true;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '支持public',
+                value: confModel.supportPublic,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportPublic = value ?? true;
+                  });
+                },
+              ),
+
+              CheckboxWithText(
+                text: '生成构造方法',
+                value: confModel.supportConstruction,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportConstruction = value ?? false;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+        Container(
+          width: unitWidth,
+          child: Column(
+            children: [
+              CheckboxWithText(
+                text: 'Mate项目',
+                value: confModel.isMate,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.isMate = value ?? false;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    /// 复制按钮
+    final copyWidget = Padding(
+      padding: EdgeInsets.all(4),
+      child: MaterialButton(
+        onPressed: () {
+          _copyToClipboard(context, outputResult ?? "");
+        },
+        color: Colors.greenAccent,
+        height: 100,
+        minWidth: buttonWidth,
+        child: const Icon(Icons.copy),
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double containerWidth = constraints.maxWidth;
+        if (containerWidth >
+            8 + buttonWidth + 16 + 240 + unitWidth * 4 + 8 + 16 + buttonWidth) {
+          return Container(
+            width: double.infinity,
+            color: Colors.blueGrey,
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  pasteWidget,
+                  SizedBox(width: 240, height: 100, child: inputNameWidget),
+                  centerContent,
+                  Spacer(),
+                  copyWidget,
+                ],
+              ),
+            ),
+          );
+        } else {
+          return Container(
+            width: double.infinity,
+            color: Colors.blueGrey,
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      pasteWidget,
+                      Expanded(child: inputNameWidget),
+                      copyWidget,
+                    ],
+                  ),
+                  centerContent,
+                ],
+              ),
+            ),
+          );
+        }
+      },
+    );
   }
 
-  // 将文本复制到剪贴板
+  /// 将文本复制到剪贴板
   void _copyToClipboard(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
 
@@ -251,6 +296,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     }
   }
 
+  /// 读取剪切板
   Future<String?> _readClipboard() async {
     try {
       // 获取剪贴板数据
@@ -276,6 +322,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     }
   }
 
+  /// 显示弹窗
   void _showDialog(BuildContext context, String message) {
     showDialog(
       context: context,
