@@ -675,7 +675,7 @@ class JsonTool {
         var deserializationSingle =
             "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
-            "\n        guard let dictionary = value as? [String: Any] else {return nil }";
+            "\n        guard let dictionary = value as? [String: Any] else { return nil }";
         deserializationSingle +=
             "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
         modelStr += "\n$deserializationSingle";
