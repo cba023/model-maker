@@ -675,7 +675,7 @@ class JsonTool {
         var deserializationSingle =
             "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
-            "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }";
+            "\n        guard let dictionary = value as? [String: Any] else {return nil }";
         deserializationSingle +=
             "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
         modelStr += "\n$deserializationSingle";
@@ -683,7 +683,7 @@ class JsonTool {
         var deserializationArray =
             "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
-            "\n        guard let array = value as? [Any] else {\n            return nil\n        }";
+            "\n        guard let array = value as? [Any] else { return nil }";
         deserializationArray +=
             "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
         modelStr += "\n$deserializationArray";
@@ -691,13 +691,13 @@ class JsonTool {
         var deserializationSingle =
             "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
-            "\n        guard let dictionary = value as? [String: Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: dictionary)\n            let res = try JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
+            "\n        guard let dictionary = value as? [String: Any] else { return nil }\n        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else { return nil }\n        return try? JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n    }";
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
             "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
-            "\n        guard let array = value as? [Any] else {\n            return nil\n        }\n        do {\n            let data = try JSONSerialization.data(withJSONObject: array)\n            let res = try JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n            return res\n        } catch {\n            return nil\n        }\n    }";
+            "\n        guard let array = value as? [Any] else { return nil }\n        guard let data = try? JSONSerialization.data(withJSONObject: array) else { return nil }\n        return try? JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n    }";
         modelStr += "\n$deserializationArray";
       }
     }
