@@ -319,10 +319,10 @@ class JsonTool {
   static String _typeName(String key, dynamic value, String superTypeName) {
     if (value is String) {
       return "String";
-    } else if (value is double) {
-      return "Double";
     } else if (value is int) {
       return "Int";
+    } else if (value is double) {
+      return "Double";
     } else if (value is bool) {
       return "Bool";
     } else {
