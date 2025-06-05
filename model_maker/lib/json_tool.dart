@@ -156,20 +156,23 @@ class JsonTool {
       );
     } else if (map is List) {
       List list = map;
-      dynamic subObj = list.firstOrNull;
-      if (subObj != null && subObj is Map) {
-        _makeSubModelsAndProperties(
-          subObj,
-          selfTypeName,
-          modelInfos,
-          properties,
-          markdownTables,
-          swaggerTables,
-          conf,
-        );
-      } else {
+      if (list.isEmpty || !Collectiontool.isMapList(list)) {
         return null;
       }
+      Map effectSubObj = {};
+      for (var i = 0; i < list.length; i++) {
+        Map elem = list[i];
+        effectSubObj.addAll(elem);
+      }
+      _makeSubModelsAndProperties(
+        effectSubObj,
+        selfTypeName,
+        modelInfos,
+        properties,
+        markdownTables,
+        swaggerTables,
+        conf,
+      );
     } else if (map == null) {
       return null;
     }
