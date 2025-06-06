@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:model_maker/collection_tool.dart';
 import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/document_tool.dart';
@@ -17,7 +18,9 @@ class JsonTool {
     ConfigurationsModel conf,
   ) {
     try {
-      return json.decode(jsonString);
+      return json.decode(
+        kIsWeb ? addTypeMarkersToJsonString(jsonString) : jsonString,
+      );
     } catch (e) {
       return null;
     }
@@ -108,7 +111,6 @@ class JsonTool {
         modelStr = modelStr.replaceRange(0, 0, "// API: $apiPath\n");
       }
       print(modelStr);
-
       return modelStr;
     }
     return null;
@@ -215,6 +217,14 @@ class JsonTool {
 
     for (var entry in m.entries) {
       String originKey = entry.key;
+      if (kIsWeb) {
+        // 运行在web环境时要检查是否有标记的类型属性，因为标记的类型字段是手动加入用于识别类型的,此处要过滤掉
+        final regex = RegExp(r'^%--(.*?)--%$');
+        bool hasMarkedType = regex.hasMatch(originKey);
+        if (hasMarkedType) {
+          continue;
+        }
+      }
       dynamic value = entry.value;
       var key = originKey;
       MarkdownRow? row;
@@ -274,8 +284,7 @@ class JsonTool {
       }
 
       bool shouldSetToStringDefault = _isInvalidList(value) || value == null;
-
-      var type = _typeName(key, value, selfTypeName);
+      var type = _typeName(key, value, selfTypeName, m);
       if (shouldSetToStringDefault) {
         type = "String";
       } else {
@@ -319,10 +328,22 @@ class JsonTool {
     return conf.supportPublic ? 'public ' : '';
   }
 
-  static String _typeName(String key, dynamic value, String superTypeName) {
+  static String _typeName(
+    String key,
+    dynamic value,
+    String superTypeName,
+    Map m,
+  ) {
     if (value is String) {
       return "String";
     } else if (value is int) {
+      if (kIsWeb) {
+        // web运行环境单独处理
+        var markedType = m["%--$key--%"];
+        if (markedType is String && markedType.isNotEmpty) {
+          return markedType;
+        }
+      }
       return "Int";
     } else if (value is double) {
       return "Double";
@@ -333,7 +354,7 @@ class JsonTool {
         List<dynamic> list = value;
         if (list.isNotEmpty) {
           dynamic first = list.first;
-          return _typeName(key, first, superTypeName);
+          return _typeName(key, first, superTypeName, m);
         }
       }
 
@@ -705,5 +726,16 @@ class JsonTool {
       }
     }
     return modelStr;
+  }
+
+  /// 浮点类型的值在web环境解析时x.0的值会被转化成整数，需要标记出来，后期特殊处理，明确成double类型
+  static String addTypeMarkersToJsonString(String jsonStr) {
+    // 匹配 "key": x.0 模式，并添加 %_key_% 类型标记
+    final regex = RegExp(r'"([^"]+)":\s*(\d+)\.0');
+    return jsonStr.replaceAllMapped(regex, (match) {
+      final key = match.group(1)!;
+      final intPart = match.group(2)!;
+      return '"$key": $intPart.0, "%--$key--%": "Double"'; // 修改类型标记字段格式
+    });
   }
 }
