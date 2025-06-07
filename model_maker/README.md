@@ -1,5 +1,7 @@
 # model_maker
 
+> 已经部署到静态网站：https://model-maker.github.io/
+
 iOS团队模型生成器
 
     * 支持SmartCodable
@@ -10,3 +12,5 @@ iOS团队模型生成器
     * 支持Swagger接口文档解析
         * 自动生成模型
         * 自动增加注释
+
+
