@@ -1,5 +1,7 @@
 # ModelMaker
 
+已部署到静态网站： https://model-maker.github.io/
+
 #### 介绍
 Swift模型生成器
 
