@@ -45,4 +45,72 @@ class StringUtils {
     }
     return count;
   }
+
+  /// 把json串value中.0替换成.1
+  static String replaceZerosInJson(String jsonStr) {
+    final result = StringBuffer();
+    final buffer = StringBuffer();
+    bool inString = false;
+    bool escape = false;
+    bool inNumber = false;
+
+    void flushBuffer() {
+      if (buffer.isEmpty) return;
+
+      final numStr = buffer.toString();
+      buffer.clear();
+
+      // 匹配整数部分 + .0 + 可选指数部分
+      final regex = RegExp(r'^(-?\d+)\.0((?:[eE][-+]?\d+)?)$');
+      final match = regex.firstMatch(numStr);
+
+      if (match != null) {
+        result.write('${match[1]}.1${match[2] ?? ''}');
+      } else {
+        result.write(numStr);
+      }
+    }
+
+    for (int i = 0; i < jsonStr.length; i++) {
+      final c = jsonStr[i];
+
+      if (inString) {
+        result.write(c);
+        if (escape) {
+          escape = false;
+        } else if (c == '\\') {
+          escape = true;
+        } else if (c == '"') {
+          inString = false;
+        }
+      } else {
+        if (c == '"') {
+          flushBuffer();
+          inString = true;
+          result.write(c);
+        } else if (c == '-' ||
+            (c.codeUnitAt(0) >= 48 && c.codeUnitAt(0) <= 57)) {
+          // 数字开始：负号或数字
+          if (!inNumber) {
+            flushBuffer();
+            inNumber = true;
+          }
+          buffer.write(c);
+        } else if (inNumber && (c == '.' || c == 'e' || c == 'E' || c == '+')) {
+          // 数字中间的特殊字符
+          buffer.write(c);
+        } else {
+          // 数字结束
+          if (inNumber) {
+            flushBuffer();
+            inNumber = false;
+          }
+          result.write(c);
+        }
+      }
+    }
+
+    flushBuffer(); // 处理末尾可能剩余的数字
+    return result.toString();
+  }
 }

@@ -7,7 +7,6 @@ import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
 import 'package:collection/collection.dart';
 import 'package:model_maker/swagger_tool.dart';
-import 'package:model_maker/web_scene_helper.dart';
 
 final todoKey = '// TODO: ';
 
@@ -19,11 +18,7 @@ class JsonTool {
     ConfigurationsModel conf,
   ) {
     try {
-      var formatedJsonStr = jsonString;
-      if (kIsWeb) {
-          formatedJsonStr = WebSceneHelper.addTypeMarkersToJsonString(jsonString);
-          formatedJsonStr = WebSceneHelper.markDoubleArray(formatedJsonStr);
-      }
+      var formatedJsonStr = !kIsWeb ? jsonString : StringUtils.replaceZerosInJson(jsonString);
       return json.decode(formatedJsonStr);
     } catch (e) {
       return null;
@@ -221,14 +216,6 @@ class JsonTool {
 
     for (var entry in m.entries) {
       String originKey = entry.key;
-      if (kIsWeb) {
-        // 运行在web环境时要检查是否有标记的类型属性，因为标记的类型字段是手动加入用于识别类型的,此处要过滤掉
-        final regex = RegExp(r'^%--(.*?)--%$');
-        bool hasMarkedType = regex.hasMatch(originKey);
-        if (hasMarkedType) {
-          continue;
-        }
-      }
       dynamic value = entry.value;
       var key = originKey;
       MarkdownRow? row;
@@ -341,13 +328,6 @@ class JsonTool {
     if (value is String) {
       return "String";
     } else if (value is int) {
-      if (kIsWeb) {
-        // web运行环境单独处理
-        var markedType = m["%--$key--%"];
-        if (markedType is String && markedType.isNotEmpty) {
-          return markedType;
-        }
-      }
       return "Int";
     } else if (value is double) {
       return "Double";
@@ -358,7 +338,11 @@ class JsonTool {
         List<dynamic> list = value;
         if (list.isNotEmpty) {
           dynamic first = list.first;
-          return _typeName(key, first, superTypeName, m);
+          if (first is List) {
+            return "[${_typeName(key, first, superTypeName, m)}]";
+          } else {
+            return _typeName(key, first, superTypeName, m);
+          }
         }
       }
 
@@ -614,7 +598,7 @@ class JsonTool {
         var property = modelInfo.properties[i];
         if (property.isList &&
             !property.isUnidentifiedType &&
-            !_isBasicType(property.type)) {
+            !_isBasicType(property.type) && !property.type.startsWith("[")) {
           hasListProperty = true;
           break;
         }
@@ -623,7 +607,7 @@ class JsonTool {
         var mappingStr =
             "\n\n    ${_publicPan(conf)}static func modelContainerPropertyGenericClass() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
-          if (_isBasicType(property.type) || !property.isList) {
+          if (_isBasicType(property.type) || !property.isList || property.type.startsWith("[")) {
             continue;
           }
           String propertyKey =
