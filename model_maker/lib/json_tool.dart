@@ -7,6 +7,7 @@ import 'package:model_maker/string_utils.dart';
 import 'package:model_maker/model_info.dart';
 import 'package:collection/collection.dart';
 import 'package:model_maker/swagger_tool.dart';
+import 'package:model_maker/web_scene_helper.dart';
 
 final todoKey = '// TODO: ';
 
@@ -18,9 +19,12 @@ class JsonTool {
     ConfigurationsModel conf,
   ) {
     try {
-      return json.decode(
-        kIsWeb ? addTypeMarkersToJsonString(jsonString) : jsonString,
-      );
+      var formatedJsonStr = jsonString;
+      if (kIsWeb) {
+          formatedJsonStr = WebSceneHelper.addTypeMarkersToJsonString(jsonString);
+          formatedJsonStr = WebSceneHelper.markDoubleArray(formatedJsonStr);
+      }
+      return json.decode(formatedJsonStr);
     } catch (e) {
       return null;
     }
@@ -726,16 +730,5 @@ class JsonTool {
       }
     }
     return modelStr;
-  }
-
-  /// 浮点类型的值在web环境解析时x.0的值会被转化成整数，需要标记出来，后期特殊处理，明确成double类型
-  static String addTypeMarkersToJsonString(String jsonStr) {
-    // 匹配 "key": x.0 模式，并添加 %_key_% 类型标记
-    final regex = RegExp(r'"([^"]+)":\s*(\d+)\.0');
-    return jsonStr.replaceAllMapped(regex, (match) {
-      final key = match.group(1)!;
-      final intPart = match.group(2)!;
-      return '"$key": $intPart.0, "%--$key--%": "Double"'; // 修改类型标记字段格式
-    });
   }
 }
