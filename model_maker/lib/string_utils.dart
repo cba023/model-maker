@@ -3,7 +3,7 @@ import 'package:model_maker/json_tool.dart';
 class StringUtils {
   // 下划线转小驼峰
   static String underscoreToCamelCase(String input) {
-    if (int.tryParse(input) != null) {
+    if (RegExp(r'^\d').hasMatch(input)) {
       return "_$input";
     }
     final parts = input.split('_');
@@ -112,5 +112,22 @@ class StringUtils {
 
     flushBuffer(); // 处理末尾可能剩余的数字
     return result.toString();
+  }
+
+  /// 检查外层是否有成对方括号
+  static bool isValidBracketString(String s) {
+    if (!s.startsWith("[")) {
+      return false;
+    }
+    int count = 0;
+    for (int i = 0; i < s.length; i++) {
+      if (s[i] == '[') {
+        count++;
+      } else if (s[i] == ']') {
+        if (count == 0) return false;
+        count--;
+      }
+    }
+    return count == 0;
   }
 }

@@ -18,7 +18,8 @@ class JsonTool {
     ConfigurationsModel conf,
   ) {
     try {
-      var formatedJsonStr = !kIsWeb ? jsonString : StringUtils.replaceZerosInJson(jsonString);
+      var formatedJsonStr =
+          !kIsWeb ? jsonString : StringUtils.replaceZerosInJson(jsonString);
       return json.decode(formatedJsonStr);
     } catch (e) {
       return null;
@@ -157,13 +158,22 @@ class JsonTool {
       );
     } else if (map is List) {
       List list = map;
-      if (list.isEmpty || !Collectiontool.isMapList(list)) {
+      if (list.isEmpty ||
+          (!Collectiontool.isMapList(list) &&
+              !Collectiontool.isMultiDimensionalList(list))) {
         return null;
       }
       Map effectSubObj = {};
       for (var i = 0; i < list.length; i++) {
-        Map elem = list[i];
-        effectSubObj.addAll(elem);
+        var elem = list[i];
+        if (elem is Map) {
+          effectSubObj.addAll(elem);
+        } else if (elem is List) {
+          Map? map = fetchListInnerMap(elem);
+          if (map != null) {
+            effectSubObj.addAll(map);
+          }
+        }
       }
       _makeSubModelsAndProperties(
         effectSubObj,
@@ -180,6 +190,17 @@ class JsonTool {
     modelInfo.subModelInfos = modelInfos;
     modelInfo.properties = properties;
     return modelInfo;
+  }
+
+  /// 获取列表中最内层的Map,没有则返回空
+  static Map? fetchListInnerMap(List list) {
+    var first = list.firstOrNull;
+    if (first is Map) {
+      return first;
+    } else if (first is List) {
+      return fetchListInnerMap(first);
+    }
+    return null;
   }
 
   // 生成子模型和属性
@@ -269,7 +290,9 @@ class JsonTool {
           }
         }
 
-        if (modelInfo != null) {
+        if (modelInfo != null &&
+            modelInfo.value is List &&
+            !Collectiontool.isDeepestPrimitive(modelInfo.value)) {
           modelInfos.add(modelInfo);
         }
       }
@@ -495,6 +518,11 @@ class JsonTool {
         propertyStr +=
             " $todoKey 未识别`${property.key}`类型，预设为String，为避免出现程序崩溃，请手动处理";
       }
+      if (conf.supportYYModel &&
+          StringUtils.isValidBracketString(property.type)) {
+        propertyStr +=
+            " $todoKey 未识别`${property.key}`在YYModel中的类型，为避免数值为空，请手动处理多维数组的情况";
+      }
       propertiesStr += "\n$propertyStr";
     }
     return propertiesStr;
@@ -598,7 +626,8 @@ class JsonTool {
         var property = modelInfo.properties[i];
         if (property.isList &&
             !property.isUnidentifiedType &&
-            !_isBasicType(property.type) && !property.type.startsWith("[")) {
+            !_isBasicType(property.type) &&
+            !property.type.startsWith("[")) {
           hasListProperty = true;
           break;
         }
@@ -607,7 +636,9 @@ class JsonTool {
         var mappingStr =
             "\n\n    ${_publicPan(conf)}static func modelContainerPropertyGenericClass() -> [String : Any]? {\n        return [";
         for (var property in modelInfo.properties) {
-          if (_isBasicType(property.type) || !property.isList || property.type.startsWith("[")) {
+          if (_isBasicType(property.type) ||
+              !property.isList ||
+              property.type.startsWith("[")) {
             continue;
           }
           String propertyKey =

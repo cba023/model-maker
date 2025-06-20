@@ -286,7 +286,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     var hint = "复制成功！";
     var todosCount = StringUtils.countofTodo(text);
     if (todosCount > 0) {
-      hint += "注意有$todosCount处TODO项是未识别类型，已经预设为String，为避免出现程序崩溃，请手动处理";
+      hint += "注意有$todosCount处TODO项,可能是未识别类型，为避免出现程序崩溃或取不到值的情况，请手动处理";
       _showDialog(context, hint);
     } else {
       // 显示复制成功的提示
