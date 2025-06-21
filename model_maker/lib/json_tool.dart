@@ -291,8 +291,9 @@ class JsonTool {
         }
 
         if (modelInfo != null &&
-            modelInfo.value is List &&
-            !Collectiontool.isDeepestPrimitive(modelInfo.value)) {
+            (modelInfo.value is Map ||
+                (modelInfo.value is List &&
+                    !Collectiontool.isDeepestPrimitive(modelInfo.value)))) {
           modelInfos.add(modelInfo);
         }
       }
