@@ -297,10 +297,15 @@ class JsonTool {
         }
       }
 
-      bool shouldSetToStringDefault = _isInvalidList(value) || value == null;
+      final isInvalidResult = _isInvalidList(value, 0);
+      bool shouldSetToStringDefault = isInvalidResult.$1 || value == null;
+      final depth = isInvalidResult.$2;
       var type = _typeName(key, value, selfTypeName, m);
       if (shouldSetToStringDefault) {
         type = "String";
+        for (int i = 0; i < depth; i++) {
+          type = "[$type]";
+        }
       } else {
         var model = modelInfos.firstWhereOrNull((model) {
           return model.typeName == type && model.sameModelTypeName != null;
@@ -327,14 +332,18 @@ class JsonTool {
   }
 
   /// 判断List是否非法
-  static _isInvalidList(dynamic value) {
+  static (bool, int) _isInvalidList(dynamic value, int depth) {
     if (value is List) {
       List<dynamic> list = value;
       if (list.isEmpty || list.first == null) {
-        return true;
+        return (true, depth);
+      }
+      if (list.first is List) {
+        depth += 1;
+        return _isInvalidList(list.first, depth);
       }
     }
-    return false;
+    return (false, depth);
   }
 
   /// 根据配置信息确定是否显示public前缀
