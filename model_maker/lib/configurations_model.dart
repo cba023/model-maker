@@ -29,6 +29,9 @@ class ConfigurationsModel extends ChangeNotifier {
   /// 原生Codable
   bool _originCodable = false;
 
+  /// codable和SmartCodable开关
+  bool _codableMap = true;
+
   // Getter 方法
   bool get supportSmartCodable => _supportSmartCodable;
   bool get isCamelCase => _isCamelCase;
@@ -44,6 +47,8 @@ class ConfigurationsModel extends ChangeNotifier {
 
   bool get originCodable => _originCodable;
 
+  bool get codableMap => _codableMap;
+
   // Setter 方法 - 修改值并通知监听器
   set supportSmartCodable(bool value) {
     if (_supportSmartCodable != value) {
@@ -55,6 +60,13 @@ class ConfigurationsModel extends ChangeNotifier {
       } else {
         _originCodable = false;
       }
+      notifyListeners();
+    }
+  }
+
+  set codableMap(bool value) {
+    if (_codableMap != value) {
+      _codableMap = value;
       notifyListeners();
     }
   }

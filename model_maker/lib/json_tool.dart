@@ -548,7 +548,7 @@ class JsonTool {
 
     /// 检查SmartCodable要求的映射关系
     if (conf.supportSmartCodable) {
-      if (conf.isCamelCase && hasNeedMappingKeyProperties) {
+      if (conf.isCamelCase && hasNeedMappingKeyProperties && conf.codableMap) {
         var mappingStr =
             "\n\n    ${_publicPan(conf)}static func mappingForKey() -> [SmartKeyTransformer]? {\n        return [";
         for (var property in modelInfo.properties) {
@@ -574,7 +574,7 @@ class JsonTool {
         modelStr += "\n\n    ${_publicPan(conf)}init() {}";
       }
     } else if (conf.originCodable) {
-      if (conf.isCamelCase && hasNeedMappingKeyProperties) {
+      if (conf.isCamelCase && hasNeedMappingKeyProperties && conf.codableMap) {
         var mappingStr =
             "\n\n    ${_publicPan(conf)}enum CodingKeys: String, CodingKey {";
         for (var property in modelInfo.properties) {
@@ -729,8 +729,10 @@ class JsonTool {
             "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else { return nil }";
+        final optionsPan =
+            conf.codableMap ? "" : ", options: [.key(.fromSnakeCase)]";
         deserializationSingle +=
-            "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
+            "\n        return ${modelInfo.typeName}.deserialize(from: dictionary$optionsPan)\n    }";
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
@@ -738,19 +740,41 @@ class JsonTool {
         deserializationArray +=
             "\n        guard let array = value as? [Any] else { return nil }";
         deserializationArray +=
-            "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
+            "\n        return [${modelInfo.typeName}].deserialize(from: array$optionsPan)\n    }";
         modelStr += "\n$deserializationArray";
       } else if (conf.originCodable) {
         var deserializationSingle =
             "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+
+        final optionsPan = conf.codableMap ? "" : "";
         deserializationSingle +=
-            "\n        guard let dictionary = value as? [String: Any] else { return nil }\n        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else { return nil }\n        return try? JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n    }";
+            "\n        guard let dictionary = value as? [String: Any] else { return nil }";
+        deserializationSingle +=
+            "\n        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else { return nil }";
+        if (conf.codableMap) {
+          deserializationSingle +=
+              "\n        return try? JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n    }";
+        } else {
+          deserializationSingle +=
+              "\n        let decoder = JSONDecoder()\n        decoder.keyDecodingStrategy = .convertFromSnakeCase\n        return try? decoder.decode(${modelInfo.typeName}.self, from: data)\n    }";
+        }
+
         modelStr += "\n$deserializationSingle";
 
         var deserializationArray =
             "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
         deserializationArray +=
-            "\n        guard let array = value as? [Any] else { return nil }\n        guard let data = try? JSONSerialization.data(withJSONObject: array) else { return nil }\n        return try? JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n    }";
+            "\n        guard let array = value as? [Any] else { return nil }";
+        deserializationArray +=
+            "\n        guard let data = try? JSONSerialization.data(withJSONObject: array) else { return nil }";
+        if (conf.codableMap) {
+          deserializationArray +=
+              "\n        return try? JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n    }";
+        } else {
+          deserializationArray +=
+              "\n        let decoder = JSONDecoder()\n        decoder.keyDecodingStrategy = .convertFromSnakeCase\n        return try? decoder.decode([${modelInfo.typeName}].self, from: data)\n    }";
+        }
+
         modelStr += "\n$deserializationArray";
       }
     }

@@ -29,7 +29,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
     confModel.uploadIsMate();
 
-    final unitWidth = 175.0;
+    final unitWidth = 185.0;
     final buttonWidth = 90.0;
 
     /// 粘贴按钮
@@ -151,11 +151,11 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 },
               ),
               CheckboxWithText(
-                text: '反序列化静态方法',
-                value: confModel.objcObjcDeserialization,
+                text: '(Smart)Codable映射',
+                value: confModel.codableMap,
                 onChanged: (value) {
                   setState(() {
-                    confModel.objcObjcDeserialization = value ?? true;
+                    confModel.codableMap = value ?? true;
                   });
                 },
               ),
@@ -184,13 +184,12 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                   });
                 },
               ),
-
               CheckboxWithText(
-                text: '生成构造方法',
-                value: confModel.supportConstruction,
+                text: '反序列化静态方法',
+                value: confModel.objcObjcDeserialization,
                 onChanged: (value) {
                   setState(() {
-                    confModel.supportConstruction = value ?? false;
+                    confModel.objcObjcDeserialization = value ?? true;
                   });
                 },
               ),
@@ -207,6 +206,15 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 onChanged: (value) {
                   setState(() {
                     confModel.isMate = value ?? false;
+                  });
+                },
+              ),
+              CheckboxWithText(
+                text: '生成构造方法',
+                value: confModel.supportConstruction,
+                onChanged: (value) {
+                  setState(() {
+                    confModel.supportConstruction = value ?? false;
                   });
                 },
               ),
