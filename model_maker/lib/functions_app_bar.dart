@@ -29,7 +29,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
     confModel.uploadIsMate();
 
-    final unitWidth = 185.0;
+    final unitWidth = 160.0;
     final buttonWidth = 90.0;
 
     /// 粘贴按钮
@@ -89,14 +89,17 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
       ),
     );
 
+    final double unitMaxWidth = 185;
+
     /// 中间内容
     final centerContent = Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
         Container(
-          width: unitWidth,
+          constraints: BoxConstraints(maxWidth: unitMaxWidth),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CheckboxWithText(
                 text: '使用驼峰命名',
@@ -129,8 +132,9 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           ),
         ),
         Container(
-          width: unitWidth,
+          constraints: BoxConstraints(maxWidth: unitMaxWidth),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CheckboxWithText(
                 text: '支持SmartCodable',
@@ -163,8 +167,9 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           ),
         ),
         Container(
-          width: unitWidth,
+          constraints: BoxConstraints(maxWidth: unitMaxWidth),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CheckboxWithText(
                 text: '支持YYModel',
@@ -197,8 +202,9 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           ),
         ),
         Container(
-          width: unitWidth,
+          constraints: BoxConstraints(maxWidth: unitMaxWidth),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CheckboxWithText(
                 text: 'Mate项目',
@@ -241,8 +247,8 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double containerWidth = constraints.maxWidth;
-        if (containerWidth >
-            8 + buttonWidth + 16 + 240 + unitWidth * 4 + 8 + 16 + buttonWidth) {
+        final double minContainerWidth = 1200;
+        if (containerWidth > minContainerWidth) {
           return Container(
             width: double.infinity,
             color: Colors.blueGrey,
@@ -262,6 +268,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ),
           );
         } else {
+          final double smallContainerWidth = 180.0;
           return Container(
             width: double.infinity,
             color: Colors.blueGrey,
