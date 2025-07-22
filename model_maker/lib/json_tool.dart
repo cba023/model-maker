@@ -730,7 +730,9 @@ class JsonTool {
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else { return nil }";
         final optionsPan =
-            conf.codableMap ? "" : ", options: [.key(.fromSnakeCase)]";
+            conf.codableMap || !conf.isCamelCase
+                ? ""
+                : ", options: [.key(.fromSnakeCase)]";
         deserializationSingle +=
             "\n        return ${modelInfo.typeName}.deserialize(from: dictionary$optionsPan)\n    }";
         modelStr += "\n$deserializationSingle";
@@ -745,13 +747,11 @@ class JsonTool {
       } else if (conf.originCodable) {
         var deserializationSingle =
             "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
-
-        final optionsPan = conf.codableMap ? "" : "";
         deserializationSingle +=
             "\n        guard let dictionary = value as? [String: Any] else { return nil }";
         deserializationSingle +=
             "\n        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else { return nil }";
-        if (conf.codableMap) {
+        if (conf.codableMap || !conf.isCamelCase) {
           deserializationSingle +=
               "\n        return try? JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n    }";
         } else {

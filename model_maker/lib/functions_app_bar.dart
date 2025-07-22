@@ -29,7 +29,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
     confModel.uploadIsMate();
 
-    final unitWidth = 160.0;
     final buttonWidth = 90.0;
 
     /// 粘贴按钮
@@ -89,15 +88,13 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
       ),
     );
 
-    final double unitMaxWidth = 185;
-
     /// 中间内容
     final centerContent = Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
         Container(
-          constraints: BoxConstraints(maxWidth: unitMaxWidth),
+          constraints: BoxConstraints(maxWidth: 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -132,7 +129,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           ),
         ),
         Container(
-          constraints: BoxConstraints(maxWidth: unitMaxWidth),
+          constraints: BoxConstraints(maxWidth: 185),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -167,7 +164,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           ),
         ),
         Container(
-          constraints: BoxConstraints(maxWidth: unitMaxWidth),
+          constraints: BoxConstraints(maxWidth: 170),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -202,7 +199,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           ),
         ),
         Container(
-          constraints: BoxConstraints(maxWidth: unitMaxWidth),
+          constraints: BoxConstraints(maxWidth: 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -247,7 +244,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double containerWidth = constraints.maxWidth;
-        final double minContainerWidth = 1200;
+        final double minContainerWidth = 1080;
         if (containerWidth > minContainerWidth) {
           return Container(
             width: double.infinity,
@@ -268,7 +265,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ),
           );
         } else {
-          final double smallContainerWidth = 180.0;
           return Container(
             width: double.infinity,
             color: Colors.blueGrey,
