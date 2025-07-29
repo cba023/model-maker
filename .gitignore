@@ -1,0 +1,48 @@
+# Flutter/Dart 构建产物
+/build/
+/.dart_tool/
+/.packages
+/pubspec.lock
+/l10n/.dart_tool/
+
+# 本地配置文件
+/.idea/
+/.vscode/
+.DS_Store
+*.iml
+*.ipr
+*.iws
+
+# 环境变量文件
+.env
+.env.*
+!.env.example
+
+# 缓存文件
+/cache/
+/coverage/
+/profiler/
+
+# Android 特定
+/android/.gradle/
+/android/build/
+/android/local.properties
+/android/app/google-services.json
+
+# iOS 特定
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/App.framework
+/ios/Runner.xcworkspace
+/ios/Runner/GeneratedPluginRegistrant.*
+/ios/Runner/Info.plist
+
+# Web 特定
+/web/build/
+
+
+# 自定义忽略
+# 示例：添加自定义构建目录
+/build/

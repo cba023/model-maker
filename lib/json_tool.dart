@@ -570,8 +570,6 @@ class JsonTool {
         } else {
           modelStr += "\n\n    ${_publicPan(conf)}required init() {}";
         }
-      } else {
-        modelStr += "\n\n    ${_publicPan(conf)}init() {}";
       }
     } else if (conf.originCodable) {
       if (conf.isCamelCase && hasNeedMappingKeyProperties && conf.codableMap) {
