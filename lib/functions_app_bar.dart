@@ -204,7 +204,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CheckboxWithText(
-                text: 'Mate项目',
+                text: 'B类接口文档',
                 value: confModel.isMate,
                 onChanged: (value) {
                   setState(() {
