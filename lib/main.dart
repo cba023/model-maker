@@ -4,6 +4,7 @@ import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
 import 'package:model_maker/debouncer.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(
@@ -32,8 +33,84 @@ class MyApp extends StatelessWidget {
             child: SplitWindow(key: key),
           ),
         ),
+        _buildGitHubFooter(context),
       ],
     );
+  }
+
+  Widget _buildGitHubFooter(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.grey.shade50, Colors.grey.shade100],
+        ),
+        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.code, size: 16, color: Colors.grey.shade600),
+          const SizedBox(width: 8),
+          Text(
+            '该项目已开源，欢迎贡献代码',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => _launchGitHubUrl(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.blue.shade200, width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.open_in_new,
+                    size: 16,
+                    color: Colors.blue.shade700,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'GitHub',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchGitHubUrl() async {
+    try {
+      final Uri url = Uri.parse('https://github.com/cba023/model-maker');
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      // 如果无法打开链接，显示一个提示
+      print('无法打开链接: $e');
+      // 可以在这里添加一个SnackBar或其他用户提示
+    }
   }
 }
 
@@ -83,7 +160,10 @@ class _SplitWindowState extends State<SplitWindow> {
               outputResult = textResultController.text;
             });
           }) // 成功回调
-          .catchError((error) => print('错误: $error')) // 错误回调
+          .catchError((error) {
+            print('错误: $error');
+            return null;
+          }) // 错误回调
           .whenComplete(() => print('操作完成')); // 最终回调
     });
   }
@@ -118,9 +198,14 @@ class _SplitWindowState extends State<SplitWindow> {
                 bottom: 0,
                 width: constraints.maxWidth * _splitPosition,
                 child: Container(
-                  color: const Color.fromARGB(255, 249, 218, 217),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    border: Border(
+                      right: BorderSide(color: Colors.grey.shade200, width: 1),
+                    ),
+                  ),
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(15, 1, 1, 1),
+                    padding: EdgeInsets.fromLTRB(16, 8, 8, 8),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: double.infinity,
@@ -147,11 +232,10 @@ class _SplitWindowState extends State<SplitWindow> {
 
                           // 下面的TextField，根据变量控制是否显示
                           if (_showBottomTextField)
-                            SizedBox(
+                            Container(
                               height: 1,
-                              child: Container(
-                                color: const Color.fromARGB(221, 132, 131, 131),
-                              ),
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              color: Colors.grey.shade300,
                             ),
                           if (_showBottomTextField)
                             Expanded(
@@ -159,7 +243,7 @@ class _SplitWindowState extends State<SplitWindow> {
                               child: TextField(
                                 maxLines: null,
                                 decoration: InputDecoration(
-                                  hintText: "请在此处输入Mate接口文档中的模型信息",
+                                  hintText: "请在此处输入接口文档中的模型信息",
                                   hintStyle: TextStyle(color: Colors.grey),
                                   border: InputBorder.none,
                                 ),
@@ -182,11 +266,21 @@ class _SplitWindowState extends State<SplitWindow> {
                 width: _centerSeplineWidth,
                 // 分隔条宽度
                 child: Container(
-                  color: Colors.grey,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    border: Border(
+                      left: BorderSide(color: Colors.grey.shade300, width: 1),
+                      right: BorderSide(color: Colors.grey.shade300, width: 1),
+                    ),
+                  ),
                   child: Center(
-                    child: Icon(
-                      Icons.drag_handle,
-                      size: _centerSeplineWidth * 0.8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Icon(
+                        Icons.drag_handle,
+                        size: _centerSeplineWidth * 0.6,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ),
                 ),
@@ -200,9 +294,14 @@ class _SplitWindowState extends State<SplitWindow> {
                     constraints.maxWidth * (1 - _splitPosition) -
                     _centerSeplineWidth,
                 child: Container(
-                  color: Color.fromARGB(255, 204, 249, 205),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    border: Border(
+                      left: BorderSide(color: Colors.grey.shade200, width: 1),
+                    ),
+                  ),
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(15, 1, 1, 1),
+                    padding: EdgeInsets.fromLTRB(16, 8, 8, 8),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: double.infinity,

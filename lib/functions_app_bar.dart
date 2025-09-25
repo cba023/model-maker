@@ -32,212 +32,289 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     final buttonWidth = 90.0;
 
     /// 粘贴按钮
-    final pasteWidget = Padding(
-      padding: EdgeInsets.all(4),
-      child: MaterialButton(
+    final pasteWidget = Container(
+      margin: EdgeInsets.all(4),
+      child: ElevatedButton(
         onPressed: () {
           _readClipboard().then((value) {
             confModel.pastedJsonString = value ?? "";
           });
         },
-        color: Colors.redAccent,
-        height: 100,
-        minWidth: buttonWidth,
-        child: const Icon(Icons.paste),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange.shade100,
+          foregroundColor: Colors.orange.shade800,
+          elevation: 2,
+          shadowColor: Colors.orange.shade200,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.orange.shade300, width: 1),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          minimumSize: Size(buttonWidth, 80),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.paste, size: 20),
+            SizedBox(height: 4),
+            Text(
+              '粘贴',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
       ),
     );
 
     final inputNameWidget = Container(
-      child: Padding(
-        padding: EdgeInsets.all(4),
-        child: Container(
-          color: Colors.yellowAccent,
-          child: Padding(
-            padding: EdgeInsets.all(6),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 1),
-                Text('配置模型名称:', style: TextStyle(fontSize: 16)),
-                SizedBox(height: 4),
-                Container(
-                  color: Colors.white60,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(6, 1, 6, 1),
-                    child: TextField(
-                      maxLines: 1,
-                      decoration: InputDecoration(
-                        hintText: "请输入根模型名，默认Root",
-                        hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none,
+      margin: EdgeInsets.all(4),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '配置模型名称',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade200, width: 1),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  child: TextField(
+                    maxLines: 1,
+                    style: TextStyle(fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: "请输入根模型名，默认Root",
+                      hintStyle: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
                       ),
-                      controller: textEditingController,
-                      onChanged: (value) {
-                        setState(() {
-                          confModel.modelName = value;
-                        });
-                      },
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
                     ),
+                    controller: textEditingController,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.modelName = value;
+                      });
+                    },
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
 
     /// 中间内容
-    final centerContent = Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        Container(
-          constraints: BoxConstraints(maxWidth: 140),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CheckboxWithText(
-                text: '使用驼峰命名',
-                value: confModel.isCamelCase,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.isCamelCase = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '使用结构体',
-                value: confModel.isUsingStruct,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.isUsingStruct = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '支持Objc',
-                value: confModel.supportObjc,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportObjc = value ?? true;
-                  });
-                },
-              ),
-            ],
+    final centerContent = Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
-        Container(
-          constraints: BoxConstraints(maxWidth: 185),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CheckboxWithText(
-                text: '支持SmartCodable',
-                value: confModel.supportSmartCodable,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportSmartCodable = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '原生Codable',
-                value: confModel.originCodable,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.originCodable = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '(Smart)Codable映射',
-                value: confModel.codableMap,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.codableMap = value ?? true;
-                  });
-                },
-              ),
-            ],
+        ],
+      ),
+      padding: EdgeInsets.all(16),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 12,
+        children: [
+          Container(
+            constraints: BoxConstraints(maxWidth: 140),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CheckboxWithText(
+                  text: '使用驼峰命名',
+                  value: confModel.isCamelCase,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.isCamelCase = value ?? true;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '使用结构体',
+                  value: confModel.isUsingStruct,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.isUsingStruct = value ?? true;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '支持Objc',
+                  value: confModel.supportObjc,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.supportObjc = value ?? true;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-        Container(
-          constraints: BoxConstraints(maxWidth: 170),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CheckboxWithText(
-                text: '支持YYModel',
-                value: confModel.supportYYModel,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportYYModel = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '支持public',
-                value: confModel.supportPublic,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportPublic = value ?? true;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '反序列化静态方法',
-                value: confModel.objcObjcDeserialization,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.objcObjcDeserialization = value ?? true;
-                  });
-                },
-              ),
-            ],
+          Container(
+            constraints: BoxConstraints(maxWidth: 185),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CheckboxWithText(
+                  text: '支持SmartCodable',
+                  value: confModel.supportSmartCodable,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.supportSmartCodable = value ?? true;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '原生Codable',
+                  value: confModel.originCodable,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.originCodable = value ?? true;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '(Smart)Codable映射',
+                  value: confModel.codableMap,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.codableMap = value ?? true;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-        Container(
-          constraints: BoxConstraints(maxWidth: 140),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CheckboxWithText(
-                text: 'B类接口文档',
-                value: confModel.isMate,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.isMate = value ?? false;
-                  });
-                },
-              ),
-              CheckboxWithText(
-                text: '生成构造方法',
-                value: confModel.supportConstruction,
-                onChanged: (value) {
-                  setState(() {
-                    confModel.supportConstruction = value ?? false;
-                  });
-                },
-              ),
-            ],
+          Container(
+            constraints: BoxConstraints(maxWidth: 170),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CheckboxWithText(
+                  text: '支持YYModel',
+                  value: confModel.supportYYModel,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.supportYYModel = value ?? true;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '支持public',
+                  value: confModel.supportPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.supportPublic = value ?? true;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '反序列化静态方法',
+                  value: confModel.objcObjcDeserialization,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.objcObjcDeserialization = value ?? true;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          Container(
+            constraints: BoxConstraints(maxWidth: 140),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CheckboxWithText(
+                  text: 'B类接口文档',
+                  value: confModel.isMate,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.isMate = value ?? false;
+                    });
+                  },
+                ),
+                CheckboxWithText(
+                  text: '生成构造方法',
+                  value: confModel.supportConstruction,
+                  onChanged: (value) {
+                    setState(() {
+                      confModel.supportConstruction = value ?? false;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
 
     /// 复制按钮
-    final copyWidget = Padding(
-      padding: EdgeInsets.all(4),
-      child: MaterialButton(
+    final copyWidget = Container(
+      margin: EdgeInsets.all(4),
+      child: ElevatedButton(
         onPressed: () {
           _copyToClipboard(context, outputResult ?? "");
         },
-        color: Colors.greenAccent,
-        height: 100,
-        minWidth: buttonWidth,
-        child: const Icon(Icons.copy),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green.shade100,
+          foregroundColor: Colors.green.shade800,
+          elevation: 2,
+          shadowColor: Colors.green.shade200,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.green.shade300, width: 1),
+          ),
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          minimumSize: Size(buttonWidth, 80),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.copy, size: 20),
+            SizedBox(height: 4),
+            Text(
+              '复制',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
       ),
     );
 
@@ -248,15 +325,31 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
         if (containerWidth > minContainerWidth) {
           return Container(
             width: double.infinity,
-            color: Colors.blueGrey,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.grey.shade100, Colors.grey.shade200],
+              ),
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: EdgeInsets.all(8),
+              padding: EdgeInsets.all(16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   pasteWidget,
-                  SizedBox(width: 240, height: 100, child: inputNameWidget),
+                  SizedBox(width: 240, child: inputNameWidget),
                   centerContent,
                   Spacer(),
                   copyWidget,
@@ -267,13 +360,30 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
         } else {
           return Container(
             width: double.infinity,
-            color: Colors.blueGrey,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.grey.shade100, Colors.grey.shade200],
+              ),
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: Padding(
-              padding: EdgeInsets.all(8),
+              padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       pasteWidget,
                       Expanded(child: inputNameWidget),
