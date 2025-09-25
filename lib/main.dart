@@ -75,44 +75,121 @@ class MyApp extends StatelessWidget {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(Icons.code, size: 16, color: Colors.grey.shade600),
-          const SizedBox(width: 8),
-          Text(
-            '该项目已开源',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _launchGitHubUrl(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.blue.shade200, width: 1),
+          // 左侧：Logo信息
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.code,
+                size:
+                    isSmallMobile
+                        ? 16
+                        : isMobile
+                        ? 18
+                        : 20,
+                color: Colors.blue.shade700,
               ),
-              child: Row(
+              SizedBox(width: isSmallMobile ? 4 : 6),
+              Text(
+                'Model Maker',
+                style: TextStyle(
+                  fontSize:
+                      isSmallMobile
+                          ? 14
+                          : isMobile
+                          ? 16
+                          : 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              SizedBox(width: isSmallMobile ? 3 : 4),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSmallMobile ? 4 : 6,
+                  vertical: isSmallMobile ? 1 : 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(isSmallMobile ? 6 : 8),
+                ),
+                child: Text(
+                  isSmallMobile ? 'Swift' : 'Swift模型生成器',
+                  style: TextStyle(
+                    fontSize:
+                        isSmallMobile
+                            ? 9
+                            : isMobile
+                            ? 11
+                            : 12,
+                    color: Colors.blue.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // 右侧：GitHub链接
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.open_in_new,
-                    size: 16,
-                    color: Colors.blue.shade700,
-                  ),
-                  const SizedBox(width: 6),
                   Text(
-                    'GitHub',
+                    '本项目已开源',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
                       fontWeight: FontWeight.w500,
-                      color: Colors.blue.shade700,
                     ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 10,
+                    color: Colors.grey.shade500,
                   ),
                 ],
               ),
-            ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => _launchGitHubUrl(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.blue.shade200, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.open_in_new,
+                        size: 16,
+                        color: Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'GitHub',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -152,7 +152,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           runSpacing: isMobile ? 8 : 12,
           children: [
             Container(
-              constraints: BoxConstraints(maxWidth: 140),
+              constraints: BoxConstraints(maxWidth: 160),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -175,7 +175,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                     },
                   ),
                   CheckboxWithText(
-                    text: '支持Objc',
+                    text: '支持Objective-C',
                     value: confModel.supportObjc,
                     onChanged: (value) {
                       setState(() {
@@ -368,7 +368,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ),
           );
         } else if (isTablet) {
-          // 平板端布局 - 两行布局
+          // 平板端布局 - 三行布局
           return Container(
             width: double.infinity,
             decoration: BoxDecoration(
