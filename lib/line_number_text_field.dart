@@ -73,8 +73,28 @@ class _LineNumberTextFieldState extends State<LineNumberTextField> {
     final text = widget.controller.text;
     if (text.isEmpty) return ['1'];
 
+    // 按换行符分割
     final lines = text.split('\n');
-    return List.generate(lines.length, (index) => '${index + 1}');
+    List<String> result = [];
+
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      // 估算每行能显示的字符数（基于容器宽度和字体大小）
+      final charsPerLine = 80; // 可以根据实际情况调整
+
+      if (line.length <= charsPerLine) {
+        // 单行显示
+        result.add('${i + 1}');
+      } else {
+        // 多行显示，计算需要多少行
+        final lineCount = (line.length / charsPerLine).ceil();
+        for (int j = 0; j < lineCount; j++) {
+          result.add('${i + 1}');
+        }
+      }
+    }
+
+    return result;
   }
 
   @override
@@ -82,26 +102,17 @@ class _LineNumberTextFieldState extends State<LineNumberTextField> {
     final lines = _getLines();
 
     return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300, width: 1),
-        borderRadius: BorderRadius.circular(8),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 行号区域
           Container(
             width: 50,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8),
-                bottomLeft: Radius.circular(8),
+            decoration: BoxDecoration(color: Colors.grey.shade50),
+            child: ScrollConfiguration(
+              behavior: ScrollConfiguration.of(context).copyWith(
+                scrollbars: false, // 禁用滚动条
               ),
-            ),
-            child: Scrollbar(
-              controller: _lineNumberScrollController,
-              thumbVisibility: false, // 隐藏滚动条
               child: SingleChildScrollView(
                 controller: _lineNumberScrollController,
                 physics: NeverScrollableScrollPhysics(), // 禁用独立滚动

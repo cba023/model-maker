@@ -21,21 +21,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: Scaffold(body: _buildHome(context)));
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.grey.shade50, // 浅灰色背景
+        body: _buildHome(context),
+      ),
+    );
   }
 
   Widget _buildHome(BuildContext context) {
-    return Column(
-      children: [
-        FunctionsAppBar(),
-        Expanded(
-          child: Container(
-            width: double.infinity,
-            child: SplitWindow(key: key),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.purple.shade50,
+            Colors.cyan.shade50,
+            Colors.blue.shade50,
+          ],
         ),
-        _buildGitHubFooter(context),
-      ],
+      ),
+      child: Column(
+        children: [
+          FunctionsAppBar(),
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              child: SplitWindow(key: key),
+            ),
+          ),
+          _buildGitHubFooter(context),
+        ],
+      ),
     );
   }
 
@@ -220,7 +238,7 @@ class _SplitWindowState extends State<SplitWindow> {
   final Debouncer _debouncer = Debouncer(Duration(seconds: 1));
   double _splitPosition = 0.5; // 初始分割位置为中间
 
-  final double _centerSeplineWidth = 12;
+  final double _centerSeplineWidth = 4;
   var textEditingController = TextEditingController();
   var bottomLeftTextEditingController = TextEditingController();
   var textResultController = TextEditingController();
@@ -263,19 +281,6 @@ class _SplitWindowState extends State<SplitWindow> {
     });
   }
 
-  // 根据屏幕宽度获取合适的内边距
-  double _getPaddingForScreen(double screenWidth) {
-    if (screenWidth < 480) {
-      return 8.0; // 小手机端
-    } else if (screenWidth < 768) {
-      return 10.0; // 手机端
-    } else if (screenWidth < 1200) {
-      return 12.0; // 平板端
-    } else {
-      return 16.0; // 桌面端
-    }
-  }
-
   void _updateSplitPosition(Offset position) {
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -289,13 +294,13 @@ class _SplitWindowState extends State<SplitWindow> {
       double anchorX;
 
       if (isSmallMobile) {
-        anchorX = 40.0; // 小手机端最小宽度
+        anchorX = 60.0; // 小手机端最小宽度
       } else if (isMobile) {
-        anchorX = 50.0; // 手机端最小宽度
+        anchorX = 80.0; // 手机端最小宽度
       } else if (isTablet) {
-        anchorX = 80.0; // 平板端中等宽度
+        anchorX = 100.0; // 平板端中等宽度
       } else {
-        anchorX = 100.0; // 桌面端标准宽度
+        anchorX = 120.0; // 桌面端标准宽度
       }
 
       if (dx < anchorX) {
@@ -311,121 +316,141 @@ class _SplitWindowState extends State<SplitWindow> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return GestureDetector(
-          onPanUpdate: (details) {
-            _updateSplitPosition(details.localPosition);
-          },
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: constraints.maxWidth * _splitPosition,
-                child: Container(
-                  decoration: BoxDecoration(color: Colors.grey.shade100),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      _getPaddingForScreen(MediaQuery.of(context).size.width),
-                      8,
-                      0, // 右侧padding设为0，让内容贴近分割线
-                      8,
-                    ),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: double.infinity,
-                        minWidth: double.infinity,
-                      ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            flex: _showBottomTextField ? 1 : 2, // 显示时占1份，隐藏时占2份
-                            child: LineNumberTextField(
-                              controller: textEditingController,
-                              hintText: "请在此处输入json文本或接口文档",
-                              onChanged: (value) {
-                                _confModel.resetpastedJsonString();
-                                _handleConfChange();
-                              },
+        return Container(
+          padding: EdgeInsets.all(8), // 四周统一缩进
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300, width: 1),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: GestureDetector(
+                onPanUpdate: (details) {
+                  _updateSplitPosition(details.localPosition);
+                },
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width:
+                          (constraints.maxWidth - 16) *
+                          _splitPosition, // 减去padding
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: double.infinity,
+                              minWidth: double.infinity,
+                            ),
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  flex:
+                                      _showBottomTextField
+                                          ? 1
+                                          : 2, // 显示时占1份，隐藏时占2份
+                                  child: LineNumberTextField(
+                                    controller: textEditingController,
+                                    hintText: "请在此处输入json文本或接口文档",
+                                    onChanged: (value) {
+                                      _confModel.resetpastedJsonString();
+                                      _handleConfChange();
+                                    },
+                                  ),
+                                ),
+
+                                // 下面的TextField，根据变量控制是否显示
+                                if (_showBottomTextField)
+                                  Container(
+                                    height: 1,
+                                    margin: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    color: Colors.grey.shade300,
+                                  ),
+                                if (_showBottomTextField)
+                                  Expanded(
+                                    flex: 1, // 显示时占1份
+                                    child: LineNumberTextField(
+                                      controller:
+                                          bottomLeftTextEditingController,
+                                      hintText: "请在此处输入接口文档中的模型信息",
+                                      onChanged: (value) {
+                                        _handleConfChange();
+                                      },
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
-
-                          // 下面的TextField，根据变量控制是否显示
-                          if (_showBottomTextField)
-                            Container(
-                              height: 1,
-                              margin: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: (constraints.maxWidth - 16) * _splitPosition,
+                      top: 0,
+                      bottom: 0,
+                      width: 2, // 直接设置分隔条宽度为2px
+                      // 分隔条宽度
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          border: Border.symmetric(
+                            horizontal: BorderSide(
                               color: Colors.grey.shade300,
+                              width: 1,
                             ),
-                          if (_showBottomTextField)
-                            Expanded(
-                              flex: 1, // 显示时占1份
-                              child: LineNumberTextField(
-                                controller: bottomLeftTextEditingController,
-                                hintText: "请在此处输入接口文档中的模型信息",
-                                onChanged: (value) {
-                                  _handleConfChange();
-                                },
-                              ),
+                          ),
+                        ),
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Icon(
+                              Icons.drag_handle,
+                              size: 12,
+                              color: Colors.grey.shade700,
                             ),
-                        ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    Positioned(
+                      left:
+                          (constraints.maxWidth - 16) * _splitPosition +
+                          2, // 使用固定的分隔条宽度
+                      top: 0,
+                      bottom: 0,
+                      width:
+                          (constraints.maxWidth - 16) * (1 - _splitPosition) -
+                          2, // 使用固定的分隔条宽度
+                      child: Container(
+                        decoration: BoxDecoration(color: Colors.white),
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: double.infinity,
+                              minWidth: double.infinity,
+                            ),
+                            child: LineNumberTextField(
+                              controller: textResultController,
+                              hintText: "模型类生成后显示在此处",
+                              readOnly: true,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Positioned(
-                left: constraints.maxWidth * _splitPosition,
-                top: 0,
-                bottom: 0,
-                width: _centerSeplineWidth,
-                // 分隔条宽度
-                child: Container(
-                  decoration: BoxDecoration(color: Colors.grey.shade300),
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Icon(
-                        Icons.drag_handle,
-                        size: _centerSeplineWidth * 0.6,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left:
-                    constraints.maxWidth * _splitPosition + _centerSeplineWidth,
-                top: 0,
-                bottom: 0,
-                width:
-                    constraints.maxWidth * (1 - _splitPosition) -
-                    _centerSeplineWidth,
-                child: Container(
-                  decoration: BoxDecoration(color: Colors.grey.shade50),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      0, // 左侧padding设为0，让内容贴近分割线
-                      8,
-                      _getPaddingForScreen(MediaQuery.of(context).size.width),
-                      8,
-                    ),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: double.infinity,
-                        minWidth: double.infinity,
-                      ),
-                      child: LineNumberTextField(
-                        controller: textResultController,
-                        hintText: "模型类生成后显示在此处",
-                        readOnly: true,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
