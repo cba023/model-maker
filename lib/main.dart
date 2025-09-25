@@ -39,9 +39,26 @@ class MyApp extends StatelessWidget {
   }
 
   Widget _buildGitHubFooter(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallMobile = screenWidth < 480;
+    final isMobile = screenWidth >= 480 && screenWidth < 768;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      padding: EdgeInsets.symmetric(
+        vertical:
+            isSmallMobile
+                ? 12
+                : isMobile
+                ? 14
+                : 16,
+        horizontal:
+            isSmallMobile
+                ? 12
+                : isMobile
+                ? 16
+                : 20,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -63,7 +80,7 @@ class MyApp extends StatelessWidget {
           Icon(Icons.code, size: 16, color: Colors.grey.shade600),
           const SizedBox(width: 8),
           Text(
-            '该项目已开源，欢迎贡献代码',
+            '该项目已开源',
             style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
           ),
           const SizedBox(width: 8),
@@ -168,11 +185,41 @@ class _SplitWindowState extends State<SplitWindow> {
     });
   }
 
+  // 根据屏幕宽度获取合适的内边距
+  double _getPaddingForScreen(double screenWidth) {
+    if (screenWidth < 480) {
+      return 8.0; // 小手机端
+    } else if (screenWidth < 768) {
+      return 10.0; // 手机端
+    } else if (screenWidth < 1200) {
+      return 12.0; // 平板端
+    } else {
+      return 16.0; // 桌面端
+    }
+  }
+
   void _updateSplitPosition(Offset position) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    // 使用与AppBar相同的断点系统
+    final bool isSmallMobile = screenWidth < 480;
+    final bool isMobile = screenWidth >= 480 && screenWidth < 768;
+    final bool isTablet = screenWidth >= 768 && screenWidth < 1200;
+
     setState(() {
       double dx = position.dx;
-      double anchorX = 100.0;
+      double anchorX;
+
+      if (isSmallMobile) {
+        anchorX = 40.0; // 小手机端最小宽度
+      } else if (isMobile) {
+        anchorX = 50.0; // 手机端最小宽度
+      } else if (isTablet) {
+        anchorX = 80.0; // 平板端中等宽度
+      } else {
+        anchorX = 100.0; // 桌面端标准宽度
+      }
+
       if (dx < anchorX) {
         dx = anchorX;
       } else if (dx > screenWidth - anchorX - _centerSeplineWidth) {
@@ -205,7 +252,12 @@ class _SplitWindowState extends State<SplitWindow> {
                     ),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 8, 8),
+                    padding: EdgeInsets.fromLTRB(
+                      _getPaddingForScreen(MediaQuery.of(context).size.width),
+                      8,
+                      8,
+                      8,
+                    ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: double.infinity,
@@ -301,7 +353,12 @@ class _SplitWindowState extends State<SplitWindow> {
                     ),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 8, 8),
+                    padding: EdgeInsets.fromLTRB(
+                      _getPaddingForScreen(MediaQuery.of(context).size.width),
+                      8,
+                      8,
+                      8,
+                    ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minHeight: double.infinity,

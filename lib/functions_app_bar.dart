@@ -132,158 +132,160 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     );
 
     /// 中间内容
-    final centerContent = Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(16),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 12,
-        children: [
-          Container(
-            constraints: BoxConstraints(maxWidth: 140),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CheckboxWithText(
-                  text: '使用驼峰命名',
-                  value: confModel.isCamelCase,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.isCamelCase = value ?? true;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '使用结构体',
-                  value: confModel.isUsingStruct,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.isUsingStruct = value ?? true;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '支持Objc',
-                  value: confModel.supportObjc,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.supportObjc = value ?? true;
-                    });
-                  },
-                ),
-              ],
+    Widget buildCenterContent(bool isMobile) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade200,
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
-          ),
-          Container(
-            constraints: BoxConstraints(maxWidth: 185),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CheckboxWithText(
-                  text: '支持SmartCodable',
-                  value: confModel.supportSmartCodable,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.supportSmartCodable = value ?? true;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '原生Codable',
-                  value: confModel.originCodable,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.originCodable = value ?? true;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '(Smart)Codable映射',
-                  value: confModel.codableMap,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.codableMap = value ?? true;
-                    });
-                  },
-                ),
-              ],
+          ],
+        ),
+        padding: EdgeInsets.all(isMobile ? 12 : 16),
+        child: Wrap(
+          spacing: isMobile ? 8 : 16,
+          runSpacing: isMobile ? 8 : 12,
+          children: [
+            Container(
+              constraints: BoxConstraints(maxWidth: 140),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CheckboxWithText(
+                    text: '使用驼峰命名',
+                    value: confModel.isCamelCase,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.isCamelCase = value ?? true;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '使用结构体',
+                    value: confModel.isUsingStruct,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.isUsingStruct = value ?? true;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '支持Objc',
+                    value: confModel.supportObjc,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.supportObjc = value ?? true;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            constraints: BoxConstraints(maxWidth: 170),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CheckboxWithText(
-                  text: '支持YYModel',
-                  value: confModel.supportYYModel,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.supportYYModel = value ?? true;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '支持public',
-                  value: confModel.supportPublic,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.supportPublic = value ?? true;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '反序列化静态方法',
-                  value: confModel.objcObjcDeserialization,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.objcObjcDeserialization = value ?? true;
-                    });
-                  },
-                ),
-              ],
+            Container(
+              constraints: BoxConstraints(maxWidth: 185),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CheckboxWithText(
+                    text: '支持SmartCodable',
+                    value: confModel.supportSmartCodable,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.supportSmartCodable = value ?? true;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '原生Codable',
+                    value: confModel.originCodable,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.originCodable = value ?? true;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '(Smart)Codable映射',
+                    value: confModel.codableMap,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.codableMap = value ?? true;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            constraints: BoxConstraints(maxWidth: 140),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CheckboxWithText(
-                  text: 'B类接口文档',
-                  value: confModel.isMate,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.isMate = value ?? false;
-                    });
-                  },
-                ),
-                CheckboxWithText(
-                  text: '生成构造方法',
-                  value: confModel.supportConstruction,
-                  onChanged: (value) {
-                    setState(() {
-                      confModel.supportConstruction = value ?? false;
-                    });
-                  },
-                ),
-              ],
+            Container(
+              constraints: BoxConstraints(maxWidth: 170),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CheckboxWithText(
+                    text: '支持YYModel',
+                    value: confModel.supportYYModel,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.supportYYModel = value ?? true;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '支持public',
+                    value: confModel.supportPublic,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.supportPublic = value ?? true;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '反序列化静态方法',
+                    value: confModel.objcObjcDeserialization,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.objcObjcDeserialization = value ?? true;
+                      });
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+            Container(
+              constraints: BoxConstraints(maxWidth: 140),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CheckboxWithText(
+                    text: 'B类接口文档',
+                    value: confModel.isMate,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.isMate = value ?? false;
+                      });
+                    },
+                  ),
+                  CheckboxWithText(
+                    text: '生成构造方法',
+                    value: confModel.supportConstruction,
+                    onChanged: (value) {
+                      setState(() {
+                        confModel.supportConstruction = value ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     /// 复制按钮
     final copyWidget = Container(
@@ -321,8 +323,16 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double containerWidth = constraints.maxWidth;
-        final double minContainerWidth = 1080;
-        if (containerWidth > minContainerWidth) {
+
+        // 更细致的屏幕尺寸断点
+        final bool isMobile =
+            containerWidth >= 480 && containerWidth < 768; // 手机
+        final bool isTablet =
+            containerWidth >= 768 && containerWidth < 1200; // 平板
+        final bool isDesktop = containerWidth >= 1200; // 桌面
+
+        // 根据屏幕尺寸选择布局
+        if (isDesktop) {
           return Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -350,14 +360,15 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 children: [
                   pasteWidget,
                   SizedBox(width: 240, child: inputNameWidget),
-                  centerContent,
+                  buildCenterContent(false),
                   Spacer(),
                   copyWidget,
                 ],
               ),
             ),
           );
-        } else {
+        } else if (isTablet) {
+          // 平板端布局 - 两行布局
           return Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -378,19 +389,112 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               ],
             ),
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 第一行：按钮和模型名称
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       pasteWidget,
+                      SizedBox(width: 8),
                       Expanded(child: inputNameWidget),
+                      SizedBox(width: 8),
                       copyWidget,
                     ],
                   ),
-                  centerContent,
+                  SizedBox(height: 8),
+                  // 第二行：复选框区域
+                  buildCenterContent(false),
+                ],
+              ),
+            ),
+          );
+        } else if (isMobile) {
+          // 手机端布局
+          return Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.grey.shade100, Colors.grey.shade200],
+              ),
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 第一行：按钮
+                  Row(
+                    children: [
+                      Expanded(child: pasteWidget),
+                      SizedBox(width: 6),
+                      Expanded(child: copyWidget),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  // 第二行：模型名称
+                  inputNameWidget,
+                  SizedBox(height: 6),
+                  // 第三行：复选框区域
+                  buildCenterContent(true),
+                ],
+              ),
+            ),
+          );
+        } else {
+          // 小手机端布局 - 最紧凑的垂直布局
+          return Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.grey.shade100, Colors.grey.shade200],
+              ),
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 第一行：按钮
+                  Row(
+                    children: [
+                      Expanded(child: pasteWidget),
+                      SizedBox(width: 4),
+                      Expanded(child: copyWidget),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  // 第二行：模型名称
+                  inputNameWidget,
+                  SizedBox(height: 4),
+                  // 第三行：复选框区域
+                  buildCenterContent(true),
                 ],
               ),
             ),
