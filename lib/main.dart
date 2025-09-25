@@ -3,6 +3,7 @@ import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
 import 'package:model_maker/debouncer.dart';
+import 'package:model_maker/line_number_text_field.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -322,17 +323,12 @@ class _SplitWindowState extends State<SplitWindow> {
                 bottom: 0,
                 width: constraints.maxWidth * _splitPosition,
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    border: Border(
-                      right: BorderSide(color: Colors.grey.shade200, width: 1),
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey.shade100),
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
                       _getPaddingForScreen(MediaQuery.of(context).size.width),
                       8,
-                      8,
+                      0, // 右侧padding设为0，让内容贴近分割线
                       8,
                     ),
                     child: ConstrainedBox(
@@ -344,14 +340,9 @@ class _SplitWindowState extends State<SplitWindow> {
                         children: [
                           Expanded(
                             flex: _showBottomTextField ? 1 : 2, // 显示时占1份，隐藏时占2份
-                            child: TextField(
-                              maxLines: null,
-                              decoration: InputDecoration(
-                                hintText: "请在此处输入json文本或接口文档",
-                                hintStyle: TextStyle(color: Colors.grey),
-                                border: InputBorder.none,
-                              ),
+                            child: LineNumberTextField(
                               controller: textEditingController,
+                              hintText: "请在此处输入json文本或接口文档",
                               onChanged: (value) {
                                 _confModel.resetpastedJsonString();
                                 _handleConfChange();
@@ -369,14 +360,9 @@ class _SplitWindowState extends State<SplitWindow> {
                           if (_showBottomTextField)
                             Expanded(
                               flex: 1, // 显示时占1份
-                              child: TextField(
-                                maxLines: null,
-                                decoration: InputDecoration(
-                                  hintText: "请在此处输入接口文档中的模型信息",
-                                  hintStyle: TextStyle(color: Colors.grey),
-                                  border: InputBorder.none,
-                                ),
+                              child: LineNumberTextField(
                                 controller: bottomLeftTextEditingController,
+                                hintText: "请在此处输入接口文档中的模型信息",
                                 onChanged: (value) {
                                   _handleConfChange();
                                 },
@@ -395,13 +381,7 @@ class _SplitWindowState extends State<SplitWindow> {
                 width: _centerSeplineWidth,
                 // 分隔条宽度
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    border: Border(
-                      left: BorderSide(color: Colors.grey.shade300, width: 1),
-                      right: BorderSide(color: Colors.grey.shade300, width: 1),
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey.shade300),
                   child: Center(
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -423,17 +403,12 @@ class _SplitWindowState extends State<SplitWindow> {
                     constraints.maxWidth * (1 - _splitPosition) -
                     _centerSeplineWidth,
                 child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    border: Border(
-                      left: BorderSide(color: Colors.grey.shade200, width: 1),
-                    ),
-                  ),
+                  decoration: BoxDecoration(color: Colors.grey.shade50),
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
+                      0, // 左侧padding设为0，让内容贴近分割线
+                      8,
                       _getPaddingForScreen(MediaQuery.of(context).size.width),
-                      8,
-                      8,
                       8,
                     ),
                     child: ConstrainedBox(
@@ -441,15 +416,10 @@ class _SplitWindowState extends State<SplitWindow> {
                         minHeight: double.infinity,
                         minWidth: double.infinity,
                       ),
-                      child: TextField(
-                        readOnly: true,
-                        maxLines: null,
-                        decoration: InputDecoration(
-                          hintText: "模型类生成后显示在此处",
-                          hintStyle: TextStyle(color: Colors.grey),
-                          border: InputBorder.none,
-                        ),
+                      child: LineNumberTextField(
                         controller: textResultController,
+                        hintText: "模型类生成后显示在此处",
+                        readOnly: true,
                       ),
                     ),
                   ),
