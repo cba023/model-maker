@@ -283,10 +283,24 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
-                                Icons.format_align_left,
-                                color: Colors.blue,
-                                size: 18,
+                              // 使用文本符号作为图标，确保在所有平台上都能显示
+                              Container(
+                                width: 18,
+                                height: 18,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '{}',
+                                    style: TextStyle(
+                                      color: Colors.blue,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ),
                               SizedBox(width: 6),
                               Text(
