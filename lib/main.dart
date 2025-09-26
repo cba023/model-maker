@@ -5,8 +5,10 @@ import 'package:model_maker/json_tool.dart';
 import 'package:model_maker/debouncer.dart';
 import 'package:model_maker/code_text_field_wrapper.dart';
 import 'package:model_maker/json_formatter.dart';
+import 'package:model_maker/string_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(
@@ -185,7 +187,7 @@ class MyApp extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '本项目已开源，并提供MacOS版本',
+                    '已开源，并提供Mac版',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
@@ -414,6 +416,91 @@ class _SplitWindowState extends State<SplitWindow> {
     }
   }
 
+  /// 将文本复制到剪贴板
+  void _copyToClipboard(BuildContext context, String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+
+    var hint = "复制成功！";
+    var todosCount = StringUtils.countofTodo(text);
+    if (todosCount > 0) {
+      hint += "注意有$todosCount处TODO项,可能是未识别类型，为避免出现程序崩溃或取不到值的情况，请手动处理";
+      _showDialog(context, hint);
+    } else {
+      // 显示复制成功的提示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(hint), duration: Duration(seconds: 1)),
+      );
+    }
+  }
+
+  /// 显示弹窗
+  void _showDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '温馨提示',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      message,
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.5,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            '我知道了',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+  }
+
   void _updateSplitPosition(Offset position) {
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -582,6 +669,12 @@ class _SplitWindowState extends State<SplitWindow> {
                               hintText: "模型类生成后显示在此处",
                               readOnly: true,
                               showFloatingButtons: false, // 不显示悬浮按钮
+                              showCopyButton: true, // 显示复制按钮
+                              onCopy:
+                                  () => _copyToClipboard(
+                                    context,
+                                    textResultController.text,
+                                  ),
                             ),
                           ),
                         ),

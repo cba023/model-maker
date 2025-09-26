@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:model_maker/checkbox_with_text.dart';
 import 'package:model_maker/configurations_model.dart';
-import 'package:model_maker/string_utils.dart';
 import 'package:provider/provider.dart';
 
 class FunctionsAppBar extends StatefulWidget {
@@ -287,39 +286,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
       );
     }
 
-    /// 复制按钮
-    final copyWidget = Container(
-      margin: EdgeInsets.all(4),
-      child: ElevatedButton(
-        onPressed: () {
-          _copyToClipboard(context, outputResult ?? "");
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green.shade100,
-          foregroundColor: Colors.green.shade800,
-          elevation: 2,
-          shadowColor: Colors.green.shade200,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.green.shade300, width: 1),
-          ),
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-          minimumSize: Size(buttonWidth, 80),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.copy, size: 20),
-            SizedBox(height: 4),
-            Text(
-              '复制',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
-    );
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final double containerWidth = constraints.maxWidth;
@@ -361,8 +327,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                   pasteWidget,
                   SizedBox(width: 240, child: inputNameWidget),
                   buildCenterContent(false),
-                  Spacer(),
-                  copyWidget,
                 ],
               ),
             ),
@@ -375,7 +339,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Colors.grey.shade100, Colors.grey.shade200],
+                colors: [Colors.grey.shade50, Colors.grey.shade50],
               ),
               border: Border(
                 bottom: BorderSide(color: Colors.grey.shade300, width: 1),
@@ -400,8 +364,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                       pasteWidget,
                       SizedBox(width: 8),
                       Expanded(child: inputNameWidget),
-                      SizedBox(width: 8),
-                      copyWidget,
                     ],
                   ),
                   SizedBox(height: 8),
@@ -438,13 +400,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 第一行：按钮
-                  Row(
-                    children: [
-                      Expanded(child: pasteWidget),
-                      SizedBox(width: 6),
-                      Expanded(child: copyWidget),
-                    ],
-                  ),
+                  pasteWidget,
                   SizedBox(height: 8),
                   // 第二行：模型名称
                   inputNameWidget,
@@ -482,13 +438,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 第一行：按钮
-                  Row(
-                    children: [
-                      Expanded(child: pasteWidget),
-                      SizedBox(width: 4),
-                      Expanded(child: copyWidget),
-                    ],
-                  ),
+                  pasteWidget,
                   SizedBox(height: 6),
                   // 第二行：模型名称
                   inputNameWidget,
@@ -505,21 +455,6 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
   }
 
   /// 将文本复制到剪贴板
-  void _copyToClipboard(BuildContext context, String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
-
-    var hint = "复制成功！";
-    var todosCount = StringUtils.countofTodo(text);
-    if (todosCount > 0) {
-      hint += "注意有$todosCount处TODO项,可能是未识别类型，为避免出现程序崩溃或取不到值的情况，请手动处理";
-      _showDialog(context, hint);
-    } else {
-      // 显示复制成功的提示
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(hint), duration: Duration(seconds: 1)),
-      );
-    }
-  }
 
   /// 读取剪切板
   Future<String?> _readClipboard() async {
@@ -545,73 +480,5 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
       );
       return null;
     }
-  }
-
-  /// 显示弹窗
-  void _showDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '温馨提示',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      message,
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 1.5,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    Center(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            elevation: 0,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text(
-                            '我知道了',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-    );
   }
 }

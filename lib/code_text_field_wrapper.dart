@@ -15,6 +15,8 @@ class CodeTextFieldWrapper extends StatefulWidget {
   final bool showFloatingButtons; // 是否显示悬浮按钮（内容检测和格式化）
   final VoidCallback? onLoadSample; // 加载示例文档回调
   final VoidCallback? onClear; // 清空内容回调
+  final bool showCopyButton; // 是否显示复制按钮
+  final VoidCallback? onCopy; // 复制回调
 
   const CodeTextFieldWrapper({
     Key? key,
@@ -29,6 +31,8 @@ class CodeTextFieldWrapper extends StatefulWidget {
     this.showFloatingButtons = true, // 默认显示悬浮按钮
     this.onLoadSample,
     this.onClear,
+    this.showCopyButton = false, // 默认不显示复制按钮
+    this.onCopy,
   }) : super(key: key);
 
   @override
@@ -330,6 +334,52 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
                     ),
                   ),
               ],
+            ),
+          ),
+        // 复制按钮（独立显示，不受showFloatingButtons限制）
+        if (widget.showCopyButton &&
+            widget.onCopy != null &&
+            widget.controller.text.isNotEmpty)
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onCopy,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.copy, color: Colors.green, size: 18),
+                        SizedBox(width: 6),
+                        Text(
+                          '复制代码',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
       ],
