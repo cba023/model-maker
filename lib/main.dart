@@ -3,7 +3,7 @@ import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
 import 'package:model_maker/debouncer.dart';
-import 'package:model_maker/line_number_text_field.dart';
+import 'package:model_maker/code_text_field_wrapper.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -355,7 +355,7 @@ class _SplitWindowState extends State<SplitWindow> {
                                       _showBottomTextField
                                           ? 1
                                           : 2, // 显示时占1份，隐藏时占2份
-                                  child: LineNumberTextField(
+                                  child: CodeTextFieldWrapper(
                                     controller: textEditingController,
                                     hintText: "请在此处输入json文本或接口文档",
                                     onChanged: (value) {
@@ -377,7 +377,7 @@ class _SplitWindowState extends State<SplitWindow> {
                                 if (_showBottomTextField)
                                   Expanded(
                                     flex: 1, // 显示时占1份
-                                    child: LineNumberTextField(
+                                    child: CodeTextFieldWrapper(
                                       controller:
                                           bottomLeftTextEditingController,
                                       hintText: "请在此处输入接口文档中的模型信息",
@@ -438,7 +438,7 @@ class _SplitWindowState extends State<SplitWindow> {
                               minHeight: double.infinity,
                               minWidth: double.infinity,
                             ),
-                            child: LineNumberTextField(
+                            child: CodeTextFieldWrapper(
                               controller: textResultController,
                               hintText: "模型类生成后显示在此处",
                               readOnly: true,
