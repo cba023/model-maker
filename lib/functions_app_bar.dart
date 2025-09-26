@@ -165,12 +165,13 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ),
           ],
         ),
-        padding: EdgeInsets.all(12), // 调整内边距以适应不同高度
+        padding: EdgeInsets.fromLTRB(2, 10, 2, 2), // 调整内边距以适应不同高度
         child: Wrap(
-          direction: Axis.vertical,
+          direction: Axis.vertical, // 垂直方向实现列式布局
           alignment: WrapAlignment.start,
-          spacing: 6.5,
-          runSpacing: isMobile ? 1 : 2, // 垂直间距，进一步减少让行更紧凑
+          crossAxisAlignment: WrapCrossAlignment.start,
+          spacing: 8, // 垂直间距（行间距）
+          runSpacing: 8, // 水平间距（列间距）
           children: [
             CheckboxWithText(
               text: '使用驼峰命名',
@@ -187,6 +188,15 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               onChanged: (value) {
                 setState(() {
                   confModel.isUsingStruct = value ?? true;
+                });
+              },
+            ),
+            CheckboxWithText(
+              text: '支持Objective-C',
+              value: confModel.supportObjc,
+              onChanged: (value) {
+                setState(() {
+                  confModel.supportObjc = value ?? true;
                 });
               },
             ),
@@ -209,6 +219,15 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               },
             ),
             CheckboxWithText(
+              text: '(Smart)Codable映射',
+              value: confModel.codableMap,
+              onChanged: (value) {
+                setState(() {
+                  confModel.codableMap = value ?? true;
+                });
+              },
+            ),
+            CheckboxWithText(
               text: '支持YYModel',
               value: confModel.supportYYModel,
               onChanged: (value) {
@@ -226,15 +245,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 });
               },
             ),
-            CheckboxWithText(
-              text: 'B类接口文档',
-              value: confModel.isMate,
-              onChanged: (value) {
-                setState(() {
-                  confModel.isMate = value ?? false;
-                });
-              },
-            ),
+
             CheckboxWithText(
               text: '生成构造方法',
               value: confModel.supportConstruction,
@@ -244,30 +255,22 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 });
               },
             ),
-            CheckboxWithText(
-              text: '支持Objective-C',
-              value: confModel.supportObjc,
-              onChanged: (value) {
-                setState(() {
-                  confModel.supportObjc = value ?? true;
-                });
-              },
-            ),
-            CheckboxWithText(
-              text: '(Smart)Codable映射',
-              value: confModel.codableMap,
-              onChanged: (value) {
-                setState(() {
-                  confModel.codableMap = value ?? true;
-                });
-              },
-            ),
+
             CheckboxWithText(
               text: '反序列化静态方法',
               value: confModel.objcObjcDeserialization,
               onChanged: (value) {
                 setState(() {
                   confModel.objcObjcDeserialization = value ?? true;
+                });
+              },
+            ),
+            CheckboxWithText(
+              text: 'B类接口文档',
+              value: confModel.isMate,
+              onChanged: (value) {
+                setState(() {
+                  confModel.isMate = value ?? false;
                 });
               },
             ),
