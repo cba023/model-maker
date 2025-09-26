@@ -92,16 +92,17 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               mainAxisAlignment: MainAxisAlignment.center, // 改为居中布局
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 5),
+                SizedBox(height: 8), // 减少顶部间距
                 Text(
                   '配置模型名称',
                   style: TextStyle(
-                    fontSize: 14, // 固定字体大小，所有屏幕保持一致
+                    fontSize: 13, // 稍微减小字体大小
                     fontWeight: FontWeight.w600,
                     color: Colors.grey.shade800,
+                    height: 1.1, // 设置行高
                   ),
                 ),
-                SizedBox(height: 12), // 增加间距
+                SizedBox(height: 12), // 减少间距
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -111,24 +112,28 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                     ),
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 0, // 固定内边距，所有屏幕保持一致
+                        horizontal: 0,
+                        vertical: 11, // 固定内边距，所有屏幕保持一致
                       ),
                       child: TextField(
                         maxLines: 1,
                         style: TextStyle(
                           fontSize: 14, // 固定字体大小，所有屏幕保持一致
+                          height: 1.2, // 设置行高，确保文本完全可见
                         ),
                         decoration: InputDecoration(
                           hintText: "请输入根模型名，默认Root",
                           hintStyle: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 14, // 固定字体大小，所有屏幕保持一致
+                            height: 1.2, // 设置提示文本行高
                           ),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(
-                            vertical: 13,
-                          ), // 增加垂直内边距让文本居中
+                            vertical: 1, // 减少垂直内边距，给文本更多空间
+                            horizontal: 4,
+                          ),
+                          isDense: true, // 减少内部间距
                         ),
                         controller: textEditingController,
                         onChanged: (value) {
@@ -140,7 +145,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                     ),
                   ),
                 ),
-                SizedBox(height: 8), // 固定底部间距，所有屏幕保持一致
+                SizedBox(height: 3), // 减少底部间距，给输入框更多空间
               ],
             ),
           ),

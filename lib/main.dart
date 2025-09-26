@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:model_maker/configurations_model.dart';
 import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
@@ -21,6 +22,18 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  /// 获取平台特定的文本
+  String _getPlatformSpecificText() {
+    // 检查是否为Web平台
+    if (kIsWeb) {
+      // Web平台显示Mac版信息
+      return '已开源，并提供Mac版';
+    } else {
+      // Mac/桌面平台显示网页版信息
+      return '已开源，并提供网页版';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +200,7 @@ class MyApp extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '已开源，并提供Mac版',
+                    _getPlatformSpecificText(),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
