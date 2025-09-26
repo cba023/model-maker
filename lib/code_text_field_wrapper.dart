@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:code_text_field/code_text_field.dart';
 import 'package:model_maker/content_detector.dart';
 
 class CodeTextFieldWrapper extends StatefulWidget {
@@ -40,7 +39,6 @@ class CodeTextFieldWrapper extends StatefulWidget {
 }
 
 class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
-  late CodeController _codeController;
   late FocusNode _focusNode;
   ContentType _contentType = ContentType.empty;
   Timer? _debounceTimer;
@@ -50,33 +48,19 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
     super.initState();
     _focusNode = FocusNode();
 
-    // 初始化 CodeController
-    _codeController = CodeController(
-      text: widget.controller.text,
-      language: null, // 不指定语言，使用纯文本模式
-    );
-
     // 监听文本变化
-    _codeController.addListener(() {
-      widget.controller.text = _codeController.text;
-      widget.onChanged?.call(_codeController.text);
+    widget.controller.addListener(() {
+      widget.onChanged?.call(widget.controller.text);
       _updateContentType();
     });
 
-    // 监听外部控制器变化
-    widget.controller.addListener(() {
-      if (widget.controller.text != _codeController.text) {
-        _codeController.text = widget.controller.text;
-        // 立即更新UI状态
-        setState(() {});
-      }
-    });
+    // 初始内容类型检测
+    _updateContentType();
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _codeController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -89,7 +73,9 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
     // 设置新的防抖定时器
     _debounceTimer = Timer(Duration(milliseconds: 300), () {
       if (mounted) {
-        final newType = ContentDetector.detectContentType(_codeController.text);
+        final newType = ContentDetector.detectContentType(
+          widget.controller.text,
+        );
         if (_contentType != newType) {
           setState(() {
             _contentType = newType;
@@ -104,50 +90,34 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
     return Stack(
       children: [
         Container(
-          child: CodeField(
-            controller: _codeController,
+          child: TextField(
+            controller: widget.controller,
             focusNode: _focusNode,
             readOnly: widget.readOnly,
-            lineNumberStyle: LineNumberStyle(
-              textStyle: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-                fontFamily: 'monospace',
-              ),
-              width: 50,
-              margin: 8,
-            ),
-            textStyle:
+            maxLines: null,
+            expands: true,
+            textAlignVertical: TextAlignVertical.top,
+            style:
                 widget.textStyle ??
                 TextStyle(
                   fontSize: 16,
                   fontFamily: 'monospace',
-                  color: Colors.black87, // 更深的正文颜色
+                  color: Colors.black87,
                 ),
-            background: Colors.white,
-            cursorColor: Colors.blue,
-            horizontalScroll: true,
-            wrap: false, // 关闭软换行
-            expands: true,
-          ),
-        ),
-        // 提示文字（当输入框为空时显示）
-        if (_codeController.text.isEmpty)
-          Positioned(
-            top: 6.5, // 再向上移动一点，与第一行文本对齐
-            left: 58, // 行号区域宽度 + 边距
-            child: Text(
-              widget.hintText,
-              style:
+            decoration: InputDecoration(
+              hintText: widget.hintText,
+              hintStyle:
                   widget.hintStyle ??
                   TextStyle(
                     color: Colors.grey.shade500,
                     fontSize: 14,
                     fontFamily: 'monospace',
-                    height: 1.0, // 确保行高一致
                   ),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.all(12),
             ),
           ),
+        ),
         // 内容检测信息和格式化按钮（只在需要时显示）
         if (widget.showFloatingButtons)
           Positioned(

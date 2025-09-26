@@ -38,7 +38,8 @@ dependencies:
   collection: ^1.19.1
   shared_preferences: 2.5.3
   url_launcher: ^6.3.1
-  code_text_field: ^1.1.0
+#  code_text_field: ^1.1.0
+  flutter_code_editor: ^0.3.0
   
 
 dev_dependencies:
