@@ -11,6 +11,7 @@ class CodeTextFieldWrapper extends StatefulWidget {
   final TextStyle? hintStyle;
   final bool showFormatButton; // 是否显示格式化按钮
   final VoidCallback? onFormat; // 格式化回调
+  final bool showFloatingButtons; // 是否显示悬浮按钮（内容检测和格式化）
 
   const CodeTextFieldWrapper({
     Key? key,
@@ -22,6 +23,7 @@ class CodeTextFieldWrapper extends StatefulWidget {
     this.hintStyle,
     this.showFormatButton = false,
     this.onFormat,
+    this.showFloatingButtons = true, // 默认显示悬浮按钮
   }) : super(key: key);
 
   @override
@@ -108,101 +110,119 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
             expands: true,
           ),
         ),
-        // 内容检测信息和格式化按钮
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 内容检测信息
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: ContentDetector.getDisplayColor(_contentType),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      ContentDetector.getDisplayText(_contentType),
-                      style: TextStyle(
-                        color: ContentDetector.getDisplayColor(_contentType),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 8),
-              // 格式化按钮（只在有效JSON时显示）
-              if (widget.showFormatButton && widget.onFormat != null)
+        // 提示文字（当输入框为空时显示）
+        if (_codeController.text.isEmpty)
+          Positioned(
+            top: 6.5, // 再向上移动一点，与第一行文本对齐
+            left: 58, // 行号区域宽度 + 边距
+            child: Text(
+              widget.hintText,
+              style:
+                  widget.hintStyle ??
+                  TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 14,
+                    fontFamily: 'monospace',
+                    height: 1.0, // 确保行高一致
+                  ),
+            ),
+          ),
+        // 内容检测信息和格式化按钮（只在需要时显示）
+        if (widget.showFloatingButtons)
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 内容检测信息
                 Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
                       ),
                     ],
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: widget.onFormat,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: ContentDetector.getDisplayColor(_contentType),
+                          shape: BoxShape.circle,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.format_align_left,
-                              color: Colors.blue,
-                              size: 18,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              '格式化JSON',
-                              style: TextStyle(
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        ContentDetector.getDisplayText(_contentType),
+                        style: TextStyle(
+                          color: ContentDetector.getDisplayColor(_contentType),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8),
+                // 格式化按钮（只在有效JSON时显示）
+                if (widget.showFormatButton && widget.onFormat != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: widget.onFormat,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.format_align_left,
                                 color: Colors.blue,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                                size: 18,
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 6),
+                              Text(
+                                '格式化JSON',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

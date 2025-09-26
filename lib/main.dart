@@ -404,6 +404,7 @@ class _SplitWindowState extends State<SplitWindow> {
                                       controller:
                                           bottomLeftTextEditingController,
                                       hintText: "请在此处输入接口文档中的模型信息",
+                                      showFloatingButtons: false, // 不显示悬浮按钮
                                       onChanged: (value) {
                                         _handleConfChange();
                                       },
@@ -465,6 +466,7 @@ class _SplitWindowState extends State<SplitWindow> {
                               controller: textResultController,
                               hintText: "模型类生成后显示在此处",
                               readOnly: true,
+                              showFloatingButtons: false, // 不显示悬浮按钮
                             ),
                           ),
                         ),
