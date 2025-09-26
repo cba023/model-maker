@@ -4,6 +4,7 @@ import 'package:model_maker/functions_app_bar.dart';
 import 'package:model_maker/json_tool.dart';
 import 'package:model_maker/debouncer.dart';
 import 'package:model_maker/code_text_field_wrapper.dart';
+import 'package:model_maker/json_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -241,6 +242,7 @@ class _SplitWindowState extends State<SplitWindow> {
   final double _centerSeplineWidth = 4;
   var textEditingController = TextEditingController();
   var bottomLeftTextEditingController = TextEditingController();
+  bool _showFormatButton = false; // 是否显示格式化按钮
   var textResultController = TextEditingController();
   late ConfigurationsModel _confModel;
   // 控制下面TextField是否显示的变量
@@ -279,6 +281,24 @@ class _SplitWindowState extends State<SplitWindow> {
           }) // 错误回调
           .whenComplete(() => print('操作完成')); // 最终回调
     });
+  }
+
+  /// 格式化JSON
+  void _formatJson() {
+    final formattedJson = JsonFormatter.formatJson(textEditingController.text);
+    setState(() {
+      textEditingController.text = formattedJson;
+    });
+  }
+
+  /// 检查并更新格式化按钮显示状态
+  void _updateFormatButtonVisibility() {
+    final isValid = JsonFormatter.isValidJson(textEditingController.text);
+    if (_showFormatButton != isValid) {
+      setState(() {
+        _showFormatButton = isValid;
+      });
+    }
   }
 
   void _updateSplitPosition(Offset position) {
@@ -358,9 +378,12 @@ class _SplitWindowState extends State<SplitWindow> {
                                   child: CodeTextFieldWrapper(
                                     controller: textEditingController,
                                     hintText: "请在此处输入json文本或接口文档",
+                                    showFormatButton: _showFormatButton,
+                                    onFormat: _formatJson,
                                     onChanged: (value) {
                                       _confModel.resetpastedJsonString();
                                       _handleConfChange();
+                                      _updateFormatButtonVisibility();
                                     },
                                   ),
                                 ),

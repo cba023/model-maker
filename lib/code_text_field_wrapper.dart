@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:code_text_field/code_text_field.dart';
+import 'package:model_maker/content_detector.dart';
 
 class CodeTextFieldWrapper extends StatefulWidget {
   final TextEditingController controller;
@@ -8,6 +9,8 @@ class CodeTextFieldWrapper extends StatefulWidget {
   final Function(String)? onChanged;
   final TextStyle? textStyle;
   final TextStyle? hintStyle;
+  final bool showFormatButton; // 是否显示格式化按钮
+  final VoidCallback? onFormat; // 格式化回调
 
   const CodeTextFieldWrapper({
     Key? key,
@@ -17,6 +20,8 @@ class CodeTextFieldWrapper extends StatefulWidget {
     this.onChanged,
     this.textStyle,
     this.hintStyle,
+    this.showFormatButton = false,
+    this.onFormat,
   }) : super(key: key);
 
   @override
@@ -26,6 +31,7 @@ class CodeTextFieldWrapper extends StatefulWidget {
 class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
   late CodeController _codeController;
   late FocusNode _focusNode;
+  ContentType _contentType = ContentType.empty;
 
   @override
   void initState() {
@@ -42,6 +48,7 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
     _codeController.addListener(() {
       widget.controller.text = _codeController.text;
       widget.onChanged?.call(_codeController.text);
+      _updateContentType();
     });
 
     // 监听外部控制器变化
@@ -59,35 +66,144 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
     super.dispose();
   }
 
+  /// 更新内容类型
+  void _updateContentType() {
+    final newType = ContentDetector.detectContentType(_codeController.text);
+    if (_contentType != newType) {
+      setState(() {
+        _contentType = newType;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: CodeField(
-        controller: _codeController,
-        focusNode: _focusNode,
-        readOnly: widget.readOnly,
-        lineNumberStyle: LineNumberStyle(
-          textStyle: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade500,
-            fontFamily: 'monospace',
-          ),
-          width: 50,
-          margin: 8,
-        ),
-        textStyle:
-            widget.textStyle ??
-            TextStyle(
-              fontSize: 14,
-              fontFamily: 'monospace',
-              color: Colors.black87, // 更深的正文颜色
+    return Stack(
+      children: [
+        Container(
+          child: CodeField(
+            controller: _codeController,
+            focusNode: _focusNode,
+            readOnly: widget.readOnly,
+            lineNumberStyle: LineNumberStyle(
+              textStyle: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade500,
+                fontFamily: 'monospace',
+              ),
+              width: 50,
+              margin: 8,
             ),
-        background: Colors.white,
-        cursorColor: Colors.blue,
-        horizontalScroll: true,
-        wrap: false, // 关闭软换行
-        expands: true,
-      ),
+            textStyle:
+                widget.textStyle ??
+                TextStyle(
+                  fontSize: 14,
+                  fontFamily: 'monospace',
+                  color: Colors.black87, // 更深的正文颜色
+                ),
+            background: Colors.white,
+            cursorColor: Colors.blue,
+            horizontalScroll: true,
+            wrap: false, // 关闭软换行
+            expands: true,
+          ),
+        ),
+        // 内容检测信息和格式化按钮
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 内容检测信息
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: ContentDetector.getDisplayColor(_contentType),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      ContentDetector.getDisplayText(_contentType),
+                      style: TextStyle(
+                        color: ContentDetector.getDisplayColor(_contentType),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: 8),
+              // 格式化按钮（只在有效JSON时显示）
+              if (widget.showFormatButton && widget.onFormat != null)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: widget.onFormat,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.format_align_left,
+                              color: Colors.blue,
+                              size: 18,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              '格式化JSON',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
