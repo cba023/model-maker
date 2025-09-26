@@ -319,9 +319,16 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  buildPasteWidget(false),
+                  SizedBox(
+                    height: componentHeight, // 使用统一高度变量
+                    child: buildPasteWidget(false),
+                  ),
                   SizedBox(width: 8),
-                  SizedBox(width: 240, child: buildInputNameWidget(false)),
+                  SizedBox(
+                    height: componentHeight, // 使用统一高度变量
+                    width: 240,
+                    child: buildInputNameWidget(false),
+                  ),
                   SizedBox(width: 8),
                   Expanded(child: buildCenterContent(false)),
                 ],
