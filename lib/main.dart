@@ -260,10 +260,13 @@ class _SplitWindowState extends State<SplitWindow> {
 
   /// 配置变更后刷新页面数据
   void _handleConfChange() {
+    // 立即更新UI状态（特别是isMate相关的显示状态）
+    setState(() {
+      _showBottomTextField = _confModel.isMate;
+    });
+
+    // 使用防抖处理模型生成
     _debouncer.run(() {
-      setState(() {
-        _showBottomTextField = _confModel.isMate;
-      });
       JsonTool.asyncGenerateModels(
             textEditingController.text,
             bottomLeftTextEditingController.text,
@@ -289,6 +292,91 @@ class _SplitWindowState extends State<SplitWindow> {
     setState(() {
       textEditingController.text = formattedJson;
     });
+  }
+
+  /// 清空内容
+  void _clearContent() {
+    textEditingController.clear();
+    _handleConfChange();
+    _updateFormatButtonVisibility();
+  }
+
+  /// 加载示例文档
+  void _loadSampleDocument() {
+    // 直接在代码中定义示例文档内容
+    const sampleContent = '''## 用户信息接口
+
+**接口地址** `/api/user/info`
+
+**请求方式** `GET`
+
+**consumes** `["application/json"]`
+
+**produces** `["application/json"]`
+
+**接口描述** 获取用户基本信息
+
+**请求参数**
+
+| 参数名称 | 参数说明 | 请求类型 | 是否必须 | 数据类型 | schema |
+|---------|---------|---------|---------|---------|--------|
+| userId  | 用户ID   | query   | true    | integer |        |
+
+**响应状态**
+
+| 状态码 | 说明 | schema |
+|--------|------|--------|
+| 200    | OK   | UserInfo |
+
+**响应参数**
+
+| 参数名称 | 参数说明 | 类型 | schema |
+|---------|---------|------|--------|
+| id      | 用户ID   | integer |        |
+| name    | 用户名   | string  |        |
+| email   | 邮箱地址 | string  |        |
+| age     | 年龄     | integer |        |
+| avatar  | 头像URL  | string  |        |
+| isActive| 是否激活 | boolean |        |
+| tags    | 标签列表 | array   | string  |
+| profile | 用户资料 | object  | UserProfile |
+
+**schema属性说明**
+
+**UserProfile**
+
+| 参数名称 | 参数说明 | 类型 | schema |
+|---------|---------|------|--------|
+| bio     | 个人简介 | string |        |
+| location| 所在地   | string |        |
+| website | 个人网站 | string |        |
+| phone   | 电话号码 | string |        |
+
+**响应示例**
+
+```json
+{
+  "id": 12345,
+  "name": "张三",
+  "email": "zhangsan@example.com",
+  "age": 25,
+  "avatar": "https://example.com/avatar.jpg",
+  "isActive": true,
+  "tags": ["开发者", "设计师", "产品经理"],
+  "profile": {
+    "bio": "热爱编程的开发者",
+    "location": "北京",
+    "website": "https://zhangsan.dev",
+    "phone": "13800138000"
+  }
+}
+```''';
+
+    // 将内容设置到第一个输入框
+    textEditingController.text = sampleContent;
+
+    // 触发配置变更，生成模型
+    _handleConfChange();
   }
 
   /// 检查并更新格式化按钮显示状态
@@ -380,6 +468,8 @@ class _SplitWindowState extends State<SplitWindow> {
                                     hintText: "请在此处输入json文本或接口文档",
                                     showFormatButton: _showFormatButton,
                                     onFormat: _formatJson,
+                                    onLoadSample: _loadSampleDocument,
+                                    onClear: _clearContent,
                                     onChanged: (value) {
                                       _confModel.resetpastedJsonString();
                                       _handleConfChange();

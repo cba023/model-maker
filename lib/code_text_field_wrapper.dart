@@ -13,6 +13,8 @@ class CodeTextFieldWrapper extends StatefulWidget {
   final bool showFormatButton; // 是否显示格式化按钮
   final VoidCallback? onFormat; // 格式化回调
   final bool showFloatingButtons; // 是否显示悬浮按钮（内容检测和格式化）
+  final VoidCallback? onLoadSample; // 加载示例文档回调
+  final VoidCallback? onClear; // 清空内容回调
 
   const CodeTextFieldWrapper({
     Key? key,
@@ -25,6 +27,8 @@ class CodeTextFieldWrapper extends StatefulWidget {
     this.showFormatButton = false,
     this.onFormat,
     this.showFloatingButtons = true, // 默认显示悬浮按钮
+    this.onLoadSample,
+    this.onClear,
   }) : super(key: key);
 
   @override
@@ -59,6 +63,8 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
     widget.controller.addListener(() {
       if (widget.controller.text != _codeController.text) {
         _codeController.text = widget.controller.text;
+        // 立即更新UI状态
+        setState(() {});
       }
     });
   }
@@ -110,7 +116,7 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
             textStyle:
                 widget.textStyle ??
                 TextStyle(
-                  fontSize: 14,
+                  fontSize: 16,
                   fontFamily: 'monospace',
                   color: Colors.black87, // 更深的正文颜色
                 ),
@@ -146,6 +152,98 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 清空按钮（只在有内容时显示）
+                if (_contentType != ContentType.empty && widget.onClear != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: widget.onClear,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.clear, color: Colors.red, size: 16),
+                              SizedBox(width: 1),
+                              Text(
+                                '清空内容',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                // 示例文档按钮（只在没有输入信息时显示）
+                if (_contentType == ContentType.empty &&
+                    widget.onLoadSample != null)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: widget.onLoadSample,
+                        borderRadius: BorderRadius.circular(6),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.description,
+                                color: Colors.orange,
+                                size: 16,
+                              ),
+                              SizedBox(width: 6),
+                              Text(
+                                '试试解析示例文档',
+                                style: TextStyle(
+                                  color: Colors.orange,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                SizedBox(width: 8),
                 // 内容检测信息
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -164,8 +262,8 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 16,
+                        height: 16,
                         decoration: BoxDecoration(
                           color: ContentDetector.getDisplayColor(_contentType),
                           shape: BoxShape.circle,

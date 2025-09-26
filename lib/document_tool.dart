@@ -94,10 +94,12 @@ class DocumentTool {
 
   /// 解析API地址
   static String? extractApiPath(String document) {
-    final regex = RegExp(r'`(/peanut/)(.+?)`');
+    // 匹配包含 /api/ 的路径，支持前面有任意前缀
+    final regex = RegExp(r'`(?:/[^/]+)?(/api/)(.+?)`');
     final match = regex.firstMatch(document);
     if (match != null) {
-      return match.group(2);
+      // 返回时把 api/ 显示在前面
+      return 'api/${match.group(2)}';
     }
     return null;
   }
