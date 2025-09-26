@@ -150,6 +150,31 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(width: isSmallMobile ? 3 : 4),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSmallMobile ? 4 : 6,
+                  vertical: isSmallMobile ? 1 : 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(isSmallMobile ? 6 : 8),
+                  border: Border.all(color: Colors.grey.shade300, width: 0.5),
+                ),
+                child: Text(
+                  'v1.2.12',
+                  style: TextStyle(
+                    fontSize:
+                        isSmallMobile
+                            ? 8
+                            : isMobile
+                            ? 10
+                            : 11,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
           // 右侧：GitHub链接
@@ -160,7 +185,7 @@ class MyApp extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '本项目已开源',
+                    '本项目已开源，并提供MacOS版本',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
