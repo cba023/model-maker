@@ -2,6 +2,34 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:model_maker/document_tool.dart';
 
+// 缓存类，用于避免重复计算
+class _ContentCache {
+  static final Map<String, ContentType> _cache = {};
+  static const int _maxCacheSize = 100;
+
+  static ContentType? get(String text) {
+    return _cache[text];
+  }
+
+  static void set(String text, ContentType type) {
+    if (_cache.length >= _maxCacheSize) {
+      // 简单的LRU策略：清除一半缓存
+      final keys = _cache.keys.toList();
+      for (int i = 0; i < keys.length ~/ 2; i++) {
+        _cache.remove(keys[i]);
+      }
+    }
+    _cache[text] = type;
+  }
+
+  static void clear() {
+    _cache.clear();
+  }
+
+  /// 获取缓存大小
+  static int get cacheSize => _cache.length;
+}
+
 enum ContentType {
   empty, // 没有输入信息
   invalidJson, // JSON非法
@@ -10,27 +38,50 @@ enum ContentType {
 }
 
 class ContentDetector {
-  /// 检测输入内容的类型
+  /// 检测输入内容的类型（带缓存优化）
   static ContentType detectContentType(String text) {
     final trimmedText = text.trim();
 
+    // 检查缓存
+    final cachedType = _ContentCache.get(trimmedText);
+    if (cachedType != null) {
+      return cachedType;
+    }
+
     // 检查是否为空
     if (trimmedText.isEmpty) {
+      _ContentCache.set(trimmedText, ContentType.empty);
       return ContentType.empty;
     }
 
+    // 对于大文本，先进行快速检查
+    if (trimmedText.length > 10000) {
+      // 大文本优化：只检查前1000个字符来判断类型
+      final preview = trimmedText.substring(0, 1000);
+      final type = _detectContentTypeInternal(preview);
+      _ContentCache.set(trimmedText, type);
+      return type;
+    }
+
+    final type = _detectContentTypeInternal(trimmedText);
+    _ContentCache.set(trimmedText, type);
+    return type;
+  }
+
+  /// 内部检测方法
+  static ContentType _detectContentTypeInternal(String text) {
     // 优先检查是否为A类接口文档类型
-    if (_isValidDocument(trimmedText)) {
+    if (_isValidDocument(text)) {
       return ContentType.validDocument;
     }
 
     // 检查是否为有效的JSON
     try {
-      jsonDecode(trimmedText);
+      jsonDecode(text);
       return ContentType.validJson;
     } catch (e) {
       // JSON解析失败，检查是否包含JSON格式的字符
-      if (_looksLikeJson(trimmedText)) {
+      if (_looksLikeJson(text)) {
         return ContentType.invalidJson;
       }
     }

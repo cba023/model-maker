@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:code_text_field/code_text_field.dart';
 import 'package:model_maker/content_detector.dart';
@@ -34,6 +35,7 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
   late CodeController _codeController;
   late FocusNode _focusNode;
   ContentType _contentType = ContentType.empty;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -63,19 +65,28 @@ class _CodeTextFieldWrapperState extends State<CodeTextFieldWrapper> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _codeController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  /// 更新内容类型
+  /// 更新内容类型（带防抖优化）
   void _updateContentType() {
-    final newType = ContentDetector.detectContentType(_codeController.text);
-    if (_contentType != newType) {
-      setState(() {
-        _contentType = newType;
-      });
-    }
+    // 取消之前的定时器
+    _debounceTimer?.cancel();
+
+    // 设置新的防抖定时器
+    _debounceTimer = Timer(Duration(milliseconds: 300), () {
+      if (mounted) {
+        final newType = ContentDetector.detectContentType(_codeController.text);
+        if (_contentType != newType) {
+          setState(() {
+            _contentType = newType;
+          });
+        }
+      }
+    });
   }
 
   @override
