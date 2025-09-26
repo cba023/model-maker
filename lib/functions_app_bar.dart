@@ -29,11 +29,12 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     confModel.uploadIsMate();
 
     final buttonWidth = 90.0;
+    final componentHeight = 100.0; // 统一的高度变量，供所有组件使用
 
     /// 粘贴按钮
     Widget buildPasteWidget(bool isMobile) {
       return Container(
-        margin: EdgeInsets.all(4),
+        margin: EdgeInsets.all(0),
         child: ElevatedButton(
           onPressed: () {
             _readClipboard().then((value) {
@@ -43,14 +44,14 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange.shade100,
             foregroundColor: Colors.orange.shade800,
-            elevation: 2,
+            elevation: 0,
             shadowColor: Colors.orange.shade200,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: Colors.orange.shade300, width: 1),
             ),
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-            minimumSize: Size(buttonWidth, isMobile ? 100 : 120),
+            padding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+            minimumSize: Size(buttonWidth, componentHeight), // 使用统一高度变量
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -70,12 +71,12 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     /// 输入名称组件
     Widget buildInputNameWidget(bool isMobile) {
       return Container(
-        margin: EdgeInsets.all(4),
-        height: isMobile ? 100 : 120, // 与pasteWidget保持一致的高度
+        margin: EdgeInsets.all(0),
+        height: componentHeight, // 使用统一高度变量
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey.shade300, width: 1),
             boxShadow: [
               BoxShadow(
@@ -86,21 +87,21 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ],
           ),
           child: Padding(
-            padding: EdgeInsets.all(isMobile ? 10 : 12), // 调整内边距以适应不同高度
+            padding: EdgeInsets.all(10), // 固定内边距，所有屏幕保持一致
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center, // 改为居中布局
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: isMobile ? 6 : 8),
+                SizedBox(height: 5),
                 Text(
                   '配置模型名称',
                   style: TextStyle(
-                    fontSize: isMobile ? 12 : 14, // 调整字体大小以适应不同高度
+                    fontSize: 14, // 固定字体大小，所有屏幕保持一致
                     fontWeight: FontWeight.w600,
                     color: Colors.grey.shade800,
                   ),
                 ),
-                SizedBox(height: isMobile ? 4 : 6), // 调整间距
+                SizedBox(height: 12), // 增加间距
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -111,21 +112,23 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                     child: Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: 8,
-                        vertical: isMobile ? 2 : 4,
+                        vertical: 0, // 固定内边距，所有屏幕保持一致
                       ),
                       child: TextField(
                         maxLines: 1,
                         style: TextStyle(
-                          fontSize: isMobile ? 12 : 14,
-                        ), // 调整字体大小
+                          fontSize: 14, // 固定字体大小，所有屏幕保持一致
+                        ),
                         decoration: InputDecoration(
                           hintText: "请输入根模型名，默认Root",
                           hintStyle: TextStyle(
                             color: Colors.grey.shade500,
-                            fontSize: isMobile ? 12 : 14, // 调整字体大小
+                            fontSize: 14, // 固定字体大小，所有屏幕保持一致
                           ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 13,
+                          ), // 增加垂直内边距让文本居中
                         ),
                         controller: textEditingController,
                         onChanged: (value) {
@@ -137,7 +140,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                     ),
                   ),
                 ),
-                SizedBox(height: isMobile ? 6 : 8),
+                SizedBox(height: 8), // 固定底部间距，所有屏幕保持一致
               ],
             ),
           ),
@@ -148,7 +151,8 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     /// 中间内容
     Widget buildCenterContent(bool isMobile) {
       return Container(
-        height: isMobile ? 160 : 120, // 与pasteWidget和inputNameWidget保持一致的高度
+        width: double.infinity, // 填满可用宽度
+        height: isMobile ? 160 : componentHeight, // 手机端160px，大屏中屏使用统一高度变量
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -161,12 +165,12 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
             ),
           ],
         ),
-        padding: EdgeInsets.all(isMobile ? 12 : 11), // 调整内边距以适应不同高度
+        padding: EdgeInsets.all(12), // 调整内边距以适应不同高度
         child: Wrap(
           direction: Axis.vertical,
           alignment: WrapAlignment.start,
-          spacing: 0,
-          runSpacing: isMobile ? 2 : 3, // 垂直间距，小屏幕时更紧凑
+          spacing: 6.5,
+          runSpacing: isMobile ? 1 : 2, // 垂直间距，进一步减少让行更紧凑
           children: [
             CheckboxWithText(
               text: '使用驼峰命名',
@@ -316,7 +320,9 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   buildPasteWidget(false),
+                  SizedBox(width: 8),
                   SizedBox(width: 240, child: buildInputNameWidget(false)),
+                  SizedBox(width: 8),
                   Expanded(child: buildCenterContent(false)),
                 ],
               ),
@@ -348,18 +354,21 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               ],
             ),
             child: Padding(
-              padding: EdgeInsets.all(12),
+              padding: EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 第一行：按钮和模型名称
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      buildPasteWidget(false),
-                      SizedBox(width: 8),
-                      Expanded(child: buildInputNameWidget(false)),
-                    ],
+                  SizedBox(
+                    height: componentHeight, // 使用统一高度变量
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        buildPasteWidget(false),
+                        SizedBox(width: 8),
+                        Expanded(child: buildInputNameWidget(false)),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 8),
                   // 第二行：复选框区域
@@ -394,20 +403,23 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               ],
             ),
             child: Padding(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 第一行：按钮和模型名称
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      buildPasteWidget(true),
-                      SizedBox(width: 8),
-                      Expanded(child: buildInputNameWidget(true)),
-                    ],
+                  SizedBox(
+                    height: componentHeight, // 使用统一高度变量
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        buildPasteWidget(true),
+                        SizedBox(width: 8),
+                        Expanded(child: buildInputNameWidget(true)),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 6),
+                  SizedBox(height: 8),
                   // 第二行：复选框区域
                   buildCenterContent(true),
                 ],
@@ -445,13 +457,16 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 第一行：按钮和模型名称
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      buildPasteWidget(true),
-                      SizedBox(width: 6),
-                      Expanded(child: buildInputNameWidget(true)),
-                    ],
+                  SizedBox(
+                    height: componentHeight, // 使用统一高度变量
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        buildPasteWidget(true),
+                        SizedBox(width: 6),
+                        Expanded(child: buildInputNameWidget(true)),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 4),
                   // 第二行：复选框区域
@@ -491,13 +506,16 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 第一行：按钮和模型名称
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      buildPasteWidget(true),
-                      SizedBox(width: 6),
-                      Expanded(child: buildInputNameWidget(true)),
-                    ],
+                  SizedBox(
+                    height: componentHeight, // 使用统一高度变量
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        buildPasteWidget(true),
+                        SizedBox(width: 6),
+                        Expanded(child: buildInputNameWidget(true)),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 4),
                   // 第二行：复选框区域

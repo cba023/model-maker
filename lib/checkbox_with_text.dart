@@ -18,7 +18,7 @@ class CheckboxWithText extends StatelessWidget {
     this.activeColor = Colors.green,
     this.textStyle,
     this.mainAxisAlignment = MainAxisAlignment.start,
-    this.spacing = 8.0,
+    this.spacing = 0.0,
   }) : super(key: key);
 
   @override
@@ -27,7 +27,7 @@ class CheckboxWithText extends StatelessWidget {
       mainAxisAlignment: mainAxisAlignment,
       children: [
         Container(
-          height: 32,
+          height: 20,
           child: Checkbox(
             value: value,
             onChanged: onChanged,
