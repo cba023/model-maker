@@ -100,7 +100,7 @@ flutter build ios
   "id": 12345,
   "name": "张三",
   "email": "zhangsan@example.com",
-  "isActive": true
+  "is_active": true
 }
 ```
 

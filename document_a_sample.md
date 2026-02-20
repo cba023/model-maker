@@ -31,7 +31,7 @@
 | email   | 邮箱地址 | string  |        |
 | age     | 年龄     | integer |        |
 | avatar  | 头像URL  | string  |        |
-| isActive| 是否激活 | boolean |        |
+| is_active | 是否激活 | boolean |        |
 | tags    | 标签列表 | array   | string  |
 | profile | 用户资料 | object  | UserProfile |
 
@@ -55,7 +55,7 @@
   "email": "zhangsan@example.com",
   "age": 25,
   "avatar": "https://example.com/avatar.jpg",
-  "isActive": true,
+  "is_active": true,
   "tags": ["开发者", "设计师", "产品经理"],
   "profile": {
     "bio": "热爱编程的开发者",
