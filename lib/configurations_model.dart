@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,6 +8,8 @@ String? outputResult;
 
 /// 配置信息
 class ConfigurationsModel extends ChangeNotifier {
+  Timer? _saveTimer;
+
   // 私有变量存储实际值
   bool _supportSmartCodable = true;
   bool _isCamelCase = true;
@@ -44,170 +47,228 @@ class ConfigurationsModel extends ChangeNotifier {
   String get pastedJsonString => _pastedJsonString;
   bool get isMate => _isMate;
   bool get supportConstruction => _supportConstruction;
-
   bool get originCodable => _originCodable;
-
   bool get codableMap => _codableMap;
 
   // Setter 方法 - 修改值并通知监听器
   set supportSmartCodable(bool value) {
-    if (_supportSmartCodable != value) {
-      _supportSmartCodable = value;
-      if (!value) {
-        if (!originCodable) {
-          _objcObjcDeserialization = false;
+    _updateBoolField(
+      _supportSmartCodable,
+      value,
+      (newValue) {
+        _supportSmartCodable = newValue;
+        if (!newValue) {
+          if (!originCodable) {
+            _objcObjcDeserialization = false;
+          }
+        } else {
+          _originCodable = false;
         }
-      } else {
-        _originCodable = false;
-      }
-      notifyListeners();
-    }
+      },
+    );
   }
 
   set codableMap(bool value) {
-    if (_codableMap != value) {
-      _codableMap = value;
-      notifyListeners();
-    }
+    _updateBoolField(_codableMap, value, (newValue) => _codableMap = newValue);
   }
 
   set isCamelCase(bool value) {
-    if (_isCamelCase != value) {
-      _isCamelCase = value;
-      notifyListeners();
-    }
+    _updateBoolField(_isCamelCase, value, (newValue) => _isCamelCase = newValue);
   }
 
   set supportObjc(bool value) {
-    if (_supportObjc != value) {
-      _supportObjc = value;
-      if (value) {
-        _isUsingStruct = false;
-      } else {
-        _supportYYModel = false;
-      }
-      notifyListeners();
-    }
+    _updateBoolField(
+      _supportObjc,
+      value,
+      (newValue) {
+        _supportObjc = newValue;
+        if (newValue) {
+          _isUsingStruct = false;
+        } else {
+          _supportYYModel = false;
+        }
+      },
+    );
   }
 
   set isUsingStruct(bool value) {
-    if (_isUsingStruct != value) {
-      _isUsingStruct = value;
-      if (value) {
-        _supportYYModel = false;
-        _supportObjc = false;
-      }
-      notifyListeners();
-    }
+    _updateBoolField(
+      _isUsingStruct,
+      value,
+      (newValue) {
+        _isUsingStruct = newValue;
+        if (newValue) {
+          _supportYYModel = false;
+          _supportObjc = false;
+        }
+      },
+    );
   }
 
   set supportYYModel(bool value) {
-    if (_supportYYModel != value) {
-      _supportYYModel = value;
-      if (value) {
-        _supportObjc = true;
-        _isUsingStruct = false;
-      }
-      notifyListeners();
-    }
+    _updateBoolField(
+      _supportYYModel,
+      value,
+      (newValue) {
+        _supportYYModel = newValue;
+        if (newValue) {
+          _supportObjc = true;
+          _isUsingStruct = false;
+        }
+      },
+    );
   }
 
   set supportPublic(bool value) {
-    if (_supportPublic != value) {
-      _supportPublic = value;
-      notifyListeners();
-    }
+    _updateBoolField(_supportPublic, value, (newValue) => _supportPublic = newValue);
   }
 
   set objcObjcDeserialization(bool value) {
-    if (_objcObjcDeserialization != value) {
-      _objcObjcDeserialization = value;
-      if (value) {
-        if (originCodable) {
-          _supportSmartCodable = false;
-        } else {
-          _supportSmartCodable = true;
-          _originCodable = false;
+    _updateBoolField(
+      _objcObjcDeserialization,
+      value,
+      (newValue) {
+        _objcObjcDeserialization = newValue;
+        if (newValue) {
+          if (originCodable) {
+            _supportSmartCodable = false;
+          } else {
+            _supportSmartCodable = true;
+            _originCodable = false;
+          }
         }
-      }
-      notifyListeners();
-    }
+      },
+    );
   }
 
   set modelName(String value) {
-    if (_modelName != value) {
-      _modelName = value;
-      notifyListeners();
-    }
+    _updateStringField(_modelName, value, (newValue) => _modelName = newValue);
   }
 
   set pastedJsonString(String value) {
     if (_pastedJsonString != value) {
       _pastedJsonString = value;
+      _scheduleSave();
       _onPastedJsonStringChanged?.call(value);
     }
   }
 
   set isMate(bool value) {
-    if (_isMate != value) {
-      _isMate = value;
-      saveIsMate(value);
-      notifyListeners();
-    }
+    _updateBoolField(_isMate, value, (newValue) => _isMate = newValue);
   }
 
   set supportConstruction(bool value) {
-    if (_supportConstruction != value) {
-      _supportConstruction = value;
-      notifyListeners();
-    }
+    _updateBoolField(_supportConstruction, value, (newValue) => _supportConstruction = newValue);
   }
 
   set originCodable(bool value) {
-    if (_originCodable != value) {
-      _originCodable = value;
-      if (value) {
-        _supportSmartCodable = false;
-      } else {
-        if (!_supportSmartCodable) {
-          _objcObjcDeserialization = false;
+    _updateBoolField(
+      _originCodable,
+      value,
+      (newValue) {
+        _originCodable = newValue;
+        if (newValue) {
+          _supportSmartCodable = false;
+        } else {
+          if (!_supportSmartCodable) {
+            _objcObjcDeserialization = false;
+          }
         }
-      }
-      notifyListeners();
-    }
+      },
+    );
   }
 
   void resetpastedJsonString() {
     if (_pastedJsonString.isNotEmpty) {
       _pastedJsonString = "";
+      _scheduleSave();
     }
   }
 
   Function(String)? _onPastedJsonStringChanged;
 
-  // 设置 JSON 字符串变化回调
   void setOnPastedJsonStringChanged(Function(String) callback) {
     _onPastedJsonStringChanged = callback;
   }
 
   Function(bool)? _isMateChanged;
+
   void setIsMateChanged(Function(bool) callback) {
     _isMateChanged = callback;
   }
 
-  /// 从本地去读取是否是mate项目,并把状态更新到页面上
   Future<void> uploadIsMate() async {
     final prefs = await SharedPreferences.getInstance();
     final isMate = prefs.getBool("isMate");
     if (isMate != null && isMate == true) {
-      this.isMate = isMate;
+      _isMate = isMate;
       _isMateChanged?.call(isMate);
     }
   }
 
-  /// 把isMate状态存入本地
-  Future<void> saveIsMate(bool isMate) async {
+  void _updateBoolField(bool currentValue, bool newValue, void Function(bool) updateFunc) {
+    if (currentValue != newValue) {
+      updateFunc(newValue);
+      _scheduleSave();
+      notifyListeners();
+    }
+  }
+
+  void _updateStringField(String currentValue, String newValue, void Function(String) updateFunc) {
+    if (currentValue != newValue) {
+      updateFunc(newValue);
+      _scheduleSave();
+      notifyListeners();
+    }
+  }
+
+  void _scheduleSave() {
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 500), () {
+      saveAllConfigurations();
+    });
+  }
+
+  Future<void> saveAllConfigurations() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isMate', isMate);
+    await prefs.setBool('supportSmartCodable', _supportSmartCodable);
+    await prefs.setBool('isCamelCase', _isCamelCase);
+    await prefs.setBool('supportObjc', _supportObjc);
+    await prefs.setBool('isUsingStruct', _isUsingStruct);
+    await prefs.setBool('supportYYModel', _supportYYModel);
+    await prefs.setBool('supportPublic', _supportPublic);
+    await prefs.setBool('objcObjcDeserialization', _objcObjcDeserialization);
+    await prefs.setString('modelName', _modelName);
+    await prefs.setString('pastedJsonString', _pastedJsonString);
+    await prefs.setBool('isMate', _isMate);
+    await prefs.setBool('supportConstruction', _supportConstruction);
+    await prefs.setBool('originCodable', _originCodable);
+    await prefs.setBool('codableMap', _codableMap);
+  }
+
+  Future<void> loadAllConfigurations() async {
+    final prefs = await SharedPreferences.getInstance();
+    
+    _supportSmartCodable = prefs.getBool('supportSmartCodable') ?? true;
+    _isCamelCase = prefs.getBool('isCamelCase') ?? true;
+    _supportObjc = prefs.getBool('supportObjc') ?? true;
+    _isUsingStruct = prefs.getBool('isUsingStruct') ?? false;
+    _supportYYModel = prefs.getBool('supportYYModel') ?? false;
+    _supportPublic = prefs.getBool('supportPublic') ?? false;
+    _objcObjcDeserialization = prefs.getBool('objcObjcDeserialization') ?? false;
+    _modelName = prefs.getString('modelName') ?? "";
+    _pastedJsonString = prefs.getString('pastedJsonString') ?? "";
+    _isMate = prefs.getBool('isMate') ?? false;
+    _supportConstruction = prefs.getBool('supportConstruction') ?? false;
+    _originCodable = prefs.getBool('originCodable') ?? false;
+    _codableMap = prefs.getBool('codableMap') ?? true;
+    
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _saveTimer?.cancel();
+    super.dispose();
   }
 }

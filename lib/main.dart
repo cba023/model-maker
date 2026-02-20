@@ -11,10 +11,13 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final configModel = ConfigurationsModel();
+  await configModel.loadAllConfigurations();
   runApp(
     ChangeNotifierProvider(
-      create: (context) => ConfigurationsModel(),
+      create: (context) => configModel,
       child: MaterialApp(home: MyApp()),
     ),
   );
