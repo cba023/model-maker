@@ -362,7 +362,7 @@ class MyApp extends StatelessWidget {
                         ),
                         _buildUsageItem(
                           'Swagger接口文档',
-                          '勾选:启用Swagger接口文档解析模式；未勾选:启用Knife4j增强版接口文档解析模式',
+                          '勾选:启用Swagger接口文档解析模式；未勾选:启用Knife4j接口文档解析模式',
                         ),
                       ],
                     ),
@@ -780,7 +780,7 @@ class _SplitWindowState extends State<SplitWindow> {
                                     child: CodeTextFieldWrapper(
                                       controller:
                                           bottomLeftTextEditingController,
-                                      hintText: "请在此处输入接口文档中的模型信息",
+                                      hintText: "请在此处输入Swagger接口文档中的模型信息",
                                       showFloatingButtons: false, // 不显示悬浮按钮
                                       onChanged: (value) {
                                         _handleConfChange();

@@ -11,7 +11,7 @@ class ConfigurationsModel extends ChangeNotifier {
   Timer? _saveTimer;
 
   // 私有变量存储实际值
-  bool _supportSmartCodable = true;
+  bool _supportSmartCodable = false;
   bool _isCamelCase = true;
   bool _supportObjc = true;
   bool _isUsingStruct = false;
@@ -30,7 +30,7 @@ class ConfigurationsModel extends ChangeNotifier {
   bool _supportConstruction = false;
 
   /// 原生Codable
-  bool _originCodable = false;
+  bool _originCodable = true;
 
   /// codable和SmartCodable开关
   bool _codableMap = true;
@@ -249,7 +249,7 @@ class ConfigurationsModel extends ChangeNotifier {
   Future<void> loadAllConfigurations() async {
     final prefs = await SharedPreferences.getInstance();
     
-    _supportSmartCodable = prefs.getBool('supportSmartCodable') ?? true;
+    _supportSmartCodable = prefs.getBool('supportSmartCodable') ?? false;
     _isCamelCase = prefs.getBool('isCamelCase') ?? true;
     _supportObjc = prefs.getBool('supportObjc') ?? true;
     _isUsingStruct = prefs.getBool('isUsingStruct') ?? false;
@@ -260,7 +260,7 @@ class ConfigurationsModel extends ChangeNotifier {
     _pastedJsonString = prefs.getString('pastedJsonString') ?? "";
     _isMate = prefs.getBool('isMate') ?? false;
     _supportConstruction = prefs.getBool('supportConstruction') ?? false;
-    _originCodable = prefs.getBool('originCodable') ?? false;
+    _originCodable = prefs.getBool('originCodable') ?? true;
     _codableMap = prefs.getBool('codableMap') ?? true;
     
     notifyListeners();

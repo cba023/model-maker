@@ -113,7 +113,7 @@ class ContentDetector {
       case ContentType.validJson:
         return 'JSON数据';
       case ContentType.validDocument:
-        return 'A类接口文档';
+        return 'Knife4j接口文档';
     }
   }
 
