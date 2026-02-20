@@ -132,8 +132,11 @@ flutter build ios
 - **支持 SmartCodable** - 使用 SmartCodable 框架
 - **支持 YYModel** - 使用 YYModel 框架
 - **原生 Codable** - 使用 Swift 原生 Codable
-- **生成构造方法** - 自动生成初始化方法
+- **(Smart)Codable映射** - 启用 JSONKey 映射，支持自定义字段名映射规则
 - **支持 public** - 添加 public 访问修饰符
+- **生成构造方法** - 自动生成初始化方法
+- **反序列化静态方法** - 生成静态的反序列化方法（如 fromJSON()），方便在外部调用时直接解析 JSON 返回的数据生成数据模型
+- **Swagger接口文档** - 勾选：启用 Swagger 接口文档解析模式；未勾选：启用 Knife4j 增强版接口文档解析模式
 
 ## 🛠️ 技术栈
 
