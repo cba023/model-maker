@@ -193,6 +193,18 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(width: isSmallMobile ? 6 : 8),
+              Tooltip(
+                message: '使用说明',
+                child: GestureDetector(
+                  onTap: () => _showUsageDialog(context),
+                  child: Icon(
+                    Icons.help_outline,
+                    size: isSmallMobile ? 18 : 20,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+              ),
             ],
           ),
           // 右侧：GitHub链接
@@ -264,10 +276,157 @@ class MyApp extends StatelessWidget {
       final Uri url = Uri.parse('https://github.com/cba023/model-maker');
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (e) {
-      // 如果无法打开链接，显示一个提示
       print('无法打开链接: $e');
-      // 可以在这里添加一个SnackBar或其他用户提示
     }
+  }
+
+  void _showUsageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.help_outline,
+                      size: 24,
+                      color: Colors.blue.shade700,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      '使用说明',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildUsageItem(
+                          '使用驼峰命名',
+                          '生成的属性名使用驼峰命名法（camelCase），如 userName、firstName',
+                        ),
+                        _buildUsageItem(
+                          '使用结构体',
+                          '生成 Swift 结构体（struct）而不是类（class），结构体是值类型',
+                        ),
+                        _buildUsageItem(
+                          '支持Objective-C',
+                          '添加 @objc 和 @objcMembers 标记，使 Swift 代码可以被 Objective-C 调用',
+                        ),
+                        _buildUsageItem(
+                          '支持SmartCodable',
+                          '使用 SmartCodable 库进行 JSON 编解码，支持更多类型和自定义映射',
+                        ),
+                        _buildUsageItem(
+                          '原生Codable',
+                          '使用 Swift 原生的 Codable 协议进行 JSON 编解码',
+                        ),
+                        _buildUsageItem(
+                          '(Smart)Codable映射',
+                          '启用 JSONKey 映射，支持自定义字段名映射规则',
+                        ),
+                        _buildUsageItem(
+                          '支持YYModel',
+                          '生成 YYModel 兼容的代码，用于 iOS 开发中的 JSON 解析',
+                        ),
+                        _buildUsageItem(
+                          '支持public',
+                          '将生成的类和属性标记为 public，使其可以在模块外部访问',
+                        ),
+                        _buildUsageItem(
+                          '生成构造方法',
+                          '为模型生成初始化构造方法，方便创建实例',
+                        ),
+                        _buildUsageItem(
+                          '反序列化静态方法',
+                          '生成静态的反序列化方法（如 fromJSON()），方便在外部调用时直接解析 JSON 返回的数据生成数据模型',
+                        ),
+                        _buildUsageItem(
+                          'Swagger接口文档',
+                          '勾选:启用Swagger接口文档解析模式；未勾选:启用Knife4j增强版接口文档解析模式',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Center(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        '我知道了',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUsageItem(String title, String description) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            description,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: Colors.black54,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

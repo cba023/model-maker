@@ -21,12 +21,12 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
     _confModel.setIsMateChanged((value) {
       setState(() {});
     });
+    _confModel.uploadIsMate();
   }
 
   @override
   Widget build(BuildContext context) {
     final confModel = Provider.of<ConfigurationsModel>(context, listen: false);
-    confModel.uploadIsMate();
 
     final buttonWidth = 90.0;
     final componentHeight = 100.0; // 统一的高度变量，供所有组件使用
@@ -271,7 +271,7 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               },
             ),
             CheckboxWithText(
-              text: 'B类接口文档',
+              text: 'Swagger接口文档',
               value: confModel.isMate,
               onChanged: (value) {
                 setState(() {
