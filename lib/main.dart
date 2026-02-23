@@ -180,7 +180,7 @@ class MyApp extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade300, width: 0.5),
                 ),
                 child: Text(
-                  'v1.2.12',
+                  'v1.2.13',
                   style: TextStyle(
                     fontSize:
                         isSmallMobile
