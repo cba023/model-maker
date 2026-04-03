@@ -135,8 +135,17 @@ flutter build ios
 - **(Smart)Codable映射** - 启用 JSONKey 映射，支持自定义字段名映射规则
 - **支持 public** - 添加 public 访问修饰符
 - **生成构造方法** - 自动生成初始化方法
-- **反序列化静态方法** - 生成静态的反序列化方法（如 fromJSON()），方便在外部调用时直接解析 JSON 返回的数据生成数据模型
+- **反序列化静态方法** - 生成 `static func instance(from value: Any?) -> Model?` 与 `static func instances(from value: Any?) -> [Model]?`，便于将 `JSONSerialization` 等得到的 `Any?` 转成模型或模型数组
 - **Swagger接口文档** - 勾选：启用Swagger接口文档解析模式；未勾选：启用Knife4j接口文档解析模式
+
+### 4. 在 Objective-C 中使用生成的模型
+
+若要在 **Objective-C** 中调用本工具生成的 Swift 模型（例如从网络 JSON 在 OC 侧解析并转为模型对象），请在应用内菜单中**同时勾选**：
+
+1. **支持 Objective-C** — 为类、属性及静态方法生成 `@objc` / `@objcMembers` 等，使 Swift 类型与成员对 OC 可见、可调用。  
+2. **反序列化静态方法** — 生成 `instance(from:)` / `instances(from:)` 等，参数为 `Any?`，便于承接 `NSJSONSerialization` 返回的 `NSDictionary` / `NSArray` 等，再转为模型或模型数组。
+
+典型流程：在 OC 中用 `NSJSONSerialization` 将 `NSData` 解析为 `id`，将得到的字典或数组传入生成模型上的 `+instanceFrom:` / `+instancesFrom:`（由 Swift `instance(from:)` / `instances(from:)` 桥接）即可。
 
 ## 🛠️ 技术栈
 
