@@ -142,7 +142,10 @@ class ConfigurationsModel extends ChangeNotifier {
   }
 
   set modelName(String value) {
-    _updateStringField(_modelName, value, (newValue) => _modelName = newValue);
+    if (_modelName != value) {
+      _modelName = value;
+      notifyListeners();
+    }
   }
 
   set pastedJsonString(String value) {
@@ -214,14 +217,6 @@ class ConfigurationsModel extends ChangeNotifier {
     }
   }
 
-  void _updateStringField(String currentValue, String newValue, void Function(String) updateFunc) {
-    if (currentValue != newValue) {
-      updateFunc(newValue);
-      _scheduleSave();
-      notifyListeners();
-    }
-  }
-
   void _scheduleSave() {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 500), () {
@@ -238,7 +233,6 @@ class ConfigurationsModel extends ChangeNotifier {
     await prefs.setBool('supportYYModel', _supportYYModel);
     await prefs.setBool('supportPublic', _supportPublic);
     await prefs.setBool('objcObjcDeserialization', _objcObjcDeserialization);
-    await prefs.setString('modelName', _modelName);
     await prefs.setString('pastedJsonString', _pastedJsonString);
     await prefs.setBool('isMate', _isMate);
     await prefs.setBool('supportConstruction', _supportConstruction);
@@ -256,7 +250,6 @@ class ConfigurationsModel extends ChangeNotifier {
     _supportYYModel = prefs.getBool('supportYYModel') ?? false;
     _supportPublic = prefs.getBool('supportPublic') ?? false;
     _objcObjcDeserialization = prefs.getBool('objcObjcDeserialization') ?? false;
-    _modelName = prefs.getString('modelName') ?? "";
     _pastedJsonString = prefs.getString('pastedJsonString') ?? "";
     _isMate = prefs.getBool('isMate') ?? false;
     _supportConstruction = prefs.getBool('supportConstruction') ?? false;

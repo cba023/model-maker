@@ -358,11 +358,15 @@ class MyApp extends StatelessWidget {
                         ),
                         _buildUsageItem(
                           '反序列化静态方法',
-                          '生成静态的反序列化方法（如 fromJSON()），方便在外部调用时直接解析 JSON 返回的数据生成数据模型',
+                          '生成 static func instance(from value: Any?) -> Model? 与 static func instances(from value: Any?) -> [Model]?，便于将 JSON 解析得到的 Any? 转为模型或模型数组',
                         ),
                         _buildUsageItem(
                           'Swagger接口文档',
                           '勾选:启用Swagger接口文档解析模式；未勾选:启用Knife4j接口文档解析模式',
+                        ),
+                        _buildUsageItem(
+                          '在 Objective-C 中使用生成的模型',
+                          '请在菜单中同时勾选「支持 Objective-C」与「反序列化静态方法」。前者为类与成员生成 @objc 等，使模型可在 OC 中访问；后者提供 instance(from:) 和 instances(from:)，参数为 Any?，便于将 NSJSONSerialization 得到的 NSDictionary / NSArray 等转为模型。OC 侧可通过桥接后的 +instanceFrom: / +instancesFrom: 调用。',
                         ),
                       ],
                     ),
