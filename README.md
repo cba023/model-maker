@@ -29,9 +29,10 @@ Model Maker 是一款专为 iOS 开发团队设计的数据模型代码生成工
   - 自动提取接口路径并生成模型名
 
 - **🎯 多种序列化框架支持**
-  - ✅ **SmartCodable** - 强大的类型安全序列化框架
+  - ✅ **SmartCodable** - 强大的类型安全序列化框架（推荐）
+  - ✅ **原生 Codable** - Swift 标准序列化协议（推荐）
   - ✅ **YYModel** - 高性能模型转换框架
-  - ✅ **原生 Codable** - Swift 标准序列化协议
+  - ✅ **HandyJSON** - 反射式序列化框架（⚠️ 官方已停止维护，建议使用 SmartCodable 或 Codable）
   - ✅ **Objective-C 兼容** - 完整支持 OC 项目
 
 - **⚙️ 高级特性**
@@ -129,10 +130,11 @@ flutter build ios
 - **使用驼峰命名** - 将 snake_case 转换为 camelCase
 - **使用结构体** - 生成 struct 而非 class
 - **支持 Objective-C** - 生成 OC 兼容代码
-- **支持 SmartCodable** - 使用 SmartCodable 框架
-- **支持 YYModel** - 使用 YYModel 框架
-- **原生 Codable** - 使用 Swift 原生 Codable
+- **支持 SmartCodable** - 使用 SmartCodable 框架（推荐）
+- **原生 Codable** - 使用 Swift 原生 Codable（推荐）
 - **(Smart)Codable映射** - 启用 JSONKey 映射，支持自定义字段名映射规则
+- **支持 YYModel** - 使用 YYModel 框架
+- **支持 HandyJSON** - 使用 HandyJSON 框架（⚠️ 官方已停止维护，建议使用 SmartCodable 或 Codable）
 - **支持 public** - 添加 public 访问修饰符
 - **生成构造方法** - 自动生成初始化方法
 - **反序列化静态方法** - 生成 `static func instance(from value: Any?) -> Model?` 与 `static func instances(from value: Any?) -> [Model]?`，便于将 `JSONSerialization` 等得到的 `Any?` 转成模型或模型数组

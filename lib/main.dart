@@ -180,7 +180,7 @@ class MyApp extends StatelessWidget {
                   border: Border.all(color: Colors.grey.shade300, width: 0.5),
                 ),
                 child: Text(
-                  'v1.2.12',
+                  'v1.2.13',
                   style: TextStyle(
                     fontSize:
                         isSmallMobile
@@ -283,125 +283,127 @@ class MyApp extends StatelessWidget {
   void _showUsageDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.help_outline,
-                      size: 24,
-                      color: Colors.blue.shade700,
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.help_outline,
+                          size: 24,
+                          color: Colors.blue.shade700,
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          '使用说明',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      '使用说明',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildUsageItem(
+                              '使用驼峰命名',
+                              '生成的属性名使用驼峰命名法（camelCase），如 userName、firstName',
+                            ),
+                            _buildUsageItem(
+                              '使用结构体',
+                              '生成 Swift 结构体（struct）而不是类（class），结构体是值类型',
+                            ),
+                            _buildUsageItem(
+                              '支持Objective-C',
+                              '添加 @objc 和 @objcMembers 标记，使 Swift 代码可以被 Objective-C 调用',
+                            ),
+                            _buildUsageItem(
+                              '支持SmartCodable',
+                              '使用 SmartCodable 库进行 JSON 编解码，支持更多类型和自定义映射',
+                            ),
+                            _buildUsageItem(
+                              '原生Codable',
+                              '使用 Swift 原生的 Codable 协议进行 JSON 编解码',
+                            ),
+                            _buildUsageItem(
+                              '(Smart)Codable映射',
+                              '启用 JSONKey 映射，支持自定义字段名映射规则',
+                            ),
+                            _buildUsageItem(
+                              '支持YYModel',
+                              '生成 YYModel 兼容的代码，用于 iOS 开发中的 JSON 解析',
+                            ),
+                            _buildUsageItem(
+                              '支持HandyJSON',
+                              '使用 HandyJSON 库进行 JSON 编解码（⚠️ 官方已停止维护，建议使用 SmartCodable 或 Codable）',
+                            ),
+                            _buildUsageItem(
+                              '支持public',
+                              '将生成的类和属性标记为 public，使其可以在模块外部访问',
+                            ),
+                            _buildUsageItem('生成构造方法', '为模型生成初始化构造方法，方便创建实例'),
+                            _buildUsageItem(
+                              '反序列化静态方法',
+                              '生成 static func instance(from value: Any?) -> Model? 与 static func instances(from value: Any?) -> [Model]?，便于将 JSON 解析得到的 Any? 转为模型或模型数组',
+                            ),
+                            _buildUsageItem(
+                              'Swagger接口文档',
+                              '勾选:启用Swagger接口文档解析模式；未勾选:启用Knife4j接口文档解析模式',
+                            ),
+                            _buildUsageItem(
+                              '在 Objective-C 中使用生成的模型',
+                              '请在菜单中同时勾选「支持 Objective-C」与「反序列化静态方法」。前者为类与成员生成 @objc 等，使模型可在 OC 中访问；后者提供 instance(from:) 和 instances(from:)，参数为 Any?，便于将 NSJSONSerialization 得到的 NSDictionary / NSArray 等转为模型。OC 侧可通过桥接后的 +instanceFrom: / +instancesFrom: 调用。',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            '我知道了',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildUsageItem(
-                          '使用驼峰命名',
-                          '生成的属性名使用驼峰命名法（camelCase），如 userName、firstName',
-                        ),
-                        _buildUsageItem(
-                          '使用结构体',
-                          '生成 Swift 结构体（struct）而不是类（class），结构体是值类型',
-                        ),
-                        _buildUsageItem(
-                          '支持Objective-C',
-                          '添加 @objc 和 @objcMembers 标记，使 Swift 代码可以被 Objective-C 调用',
-                        ),
-                        _buildUsageItem(
-                          '支持SmartCodable',
-                          '使用 SmartCodable 库进行 JSON 编解码，支持更多类型和自定义映射',
-                        ),
-                        _buildUsageItem(
-                          '原生Codable',
-                          '使用 Swift 原生的 Codable 协议进行 JSON 编解码',
-                        ),
-                        _buildUsageItem(
-                          '(Smart)Codable映射',
-                          '启用 JSONKey 映射，支持自定义字段名映射规则',
-                        ),
-                        _buildUsageItem(
-                          '支持YYModel',
-                          '生成 YYModel 兼容的代码，用于 iOS 开发中的 JSON 解析',
-                        ),
-                        _buildUsageItem(
-                          '支持public',
-                          '将生成的类和属性标记为 public，使其可以在模块外部访问',
-                        ),
-                        _buildUsageItem(
-                          '生成构造方法',
-                          '为模型生成初始化构造方法，方便创建实例',
-                        ),
-                        _buildUsageItem(
-                          '反序列化静态方法',
-                          '生成 static func instance(from value: Any?) -> Model? 与 static func instances(from value: Any?) -> [Model]?，便于将 JSON 解析得到的 Any? 转为模型或模型数组',
-                        ),
-                        _buildUsageItem(
-                          'Swagger接口文档',
-                          '勾选:启用Swagger接口文档解析模式；未勾选:启用Knife4j接口文档解析模式',
-                        ),
-                        _buildUsageItem(
-                          '在 Objective-C 中使用生成的模型',
-                          '请在菜单中同时勾选「支持 Objective-C」与「反序列化静态方法」。前者为类与成员生成 @objc 等，使模型可在 OC 中访问；后者提供 instance(from:) 和 instances(from:)，参数为 Any?，便于将 NSJSONSerialization 得到的 NSDictionary / NSArray 等转为模型。OC 侧可通过桥接后的 +instanceFrom: / +instancesFrom: 调用。',
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Center(
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 0,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        '我知道了',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -422,11 +424,7 @@ class MyApp extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             description,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.5,
-              color: Colors.black54,
-            ),
+            style: TextStyle(fontSize: 14, height: 1.5, color: Colors.black54),
           ),
         ],
       ),

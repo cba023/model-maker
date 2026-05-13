@@ -242,6 +242,15 @@ class _FunctionsAppBarState extends State<FunctionsAppBar> {
               },
             ),
             CheckboxWithText(
+              text: '支持HandyJSON',
+              value: confModel.supportHandyJSON,
+              onChanged: (value) {
+                setState(() {
+                  confModel.supportHandyJSON = value ?? true;
+                });
+              },
+            ),
+            CheckboxWithText(
               text: '支持public',
               value: confModel.supportPublic,
               onChanged: (value) {

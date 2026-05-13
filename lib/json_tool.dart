@@ -96,15 +96,22 @@ class JsonTool {
     print(modelInfo);
     if (modelInfo != null) {
       String modelStr = '\n${_modelString(modelInfo, conf)}';
-      if (conf.supportSmartCodable || conf.supportYYModel) {
+      if (conf.supportSmartCodable ||
+          conf.supportYYModel ||
+          conf.supportHandyJSON) {
         if (conf.supportSmartCodable) {
           modelStr = modelStr.replaceRange(0, 0, "import SmartCodable\n");
         }
         if (conf.supportYYModel) {
           modelStr = modelStr.replaceRange(0, 0, "import YYModel\n");
         }
+        if (conf.supportHandyJSON) {
+          modelStr = modelStr.replaceRange(0, 0, "import HandyJSON\n");
+        }
       }
-      if (!conf.supportSmartCodable && !conf.supportYYModel) {
+      if (!conf.supportSmartCodable &&
+          !conf.supportYYModel &&
+          !conf.supportHandyJSON) {
         modelStr = modelStr.replaceRange(0, 0, "import Foundation\n");
       }
       if (apiPath != null && apiPath.isNotEmpty) {
@@ -435,6 +442,13 @@ class JsonTool {
       hasNeedMappingKeyProperties,
     );
 
+    /// HandyJSON
+    modelStr += _handyJSONMappingLines(
+      modelInfo,
+      conf,
+      hasNeedMappingKeyProperties,
+    );
+
     /// 构造方法
     modelStr += _constructionMethod(modelInfo, conf);
 
@@ -455,45 +469,53 @@ class JsonTool {
   /// 类声明所在的那一行
   static String _headerLine(ModelInfo modelInfo, ConfigurationsModel conf) {
     String headerLine;
-    if (conf.isUsingStruct || !conf.supportObjc) {
-      headerLine =
-          '${conf.isUsingStruct ? "struct" : "class"} ${modelInfo.typeName} {';
-      if (conf.supportSmartCodable) {
-        headerLine = headerLine.replaceFirst(' {', ': SmartCodable {');
-      } else if (conf.originCodable) {
-        headerLine = headerLine.replaceFirst(' {', ': Codable {');
-      }
+    String typeKeyword = conf.isUsingStruct ? "struct" : "class";
 
-      /// 检查是否支持public
-      if (conf.supportPublic) {
-        headerLine = headerLine.replaceRange(0, 0, "public ");
-      }
-    } else {
-      headerLine = 'class ${modelInfo.typeName}: NSObject {';
-      if (conf.supportSmartCodable) {
-        headerLine = headerLine.replaceFirst(' {', ', SmartCodable {');
-      } else if (conf.originCodable) {
-        headerLine = headerLine.replaceFirst(' {', ', Codable {');
-      }
+    // 构建协议列表
+    List<String> protocols = [];
+    if (conf.supportSmartCodable) {
+      protocols.add("SmartCodable");
+    }
+    if (conf.originCodable) {
+      protocols.add("Codable");
+    }
+    if (conf.supportHandyJSON) {
+      protocols.add("HandyJSON");
+    }
 
-      /// 检查是否支持public
-      if (conf.supportPublic) {
-        headerLine = headerLine.replaceRange(0, 0, "public ");
+    // 如果是class且支持YYModel或Objective-C
+    if (!conf.isUsingStruct) {
+      if (conf.supportObjc) {
+        protocols.insert(0, "NSObject");
       }
       if (conf.supportYYModel) {
-        headerLine = headerLine.replaceFirst(' {', ', YYModel {');
-        headerLine = headerLine.replaceRange(
-          0,
-          0,
-          "@objc(${modelInfo.typeName})\n",
-        );
-      }
-
-      /// 检查是否支持Objc
-      if (conf.supportObjc) {
-        headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
+        protocols.add("YYModel");
       }
     }
+
+    // 构建类/结构体声明
+    String protocolStr = protocols.isEmpty ? "" : ": ${protocols.join(", ")}";
+    headerLine = '$typeKeyword ${modelInfo.typeName}$protocolStr {';
+
+    /// 检查是否支持public
+    if (conf.supportPublic) {
+      headerLine = headerLine.replaceRange(0, 0, "public ");
+    }
+
+    /// YYModel需要@objc标记
+    if (conf.supportYYModel) {
+      headerLine = headerLine.replaceRange(
+        0,
+        0,
+        "@objc(${modelInfo.typeName})\n",
+      );
+    }
+
+    /// 检查是否支持Objc
+    if (conf.supportObjc) {
+      headerLine = headerLine.replaceRange(0, 0, "@objcMembers\n");
+    }
+
     return headerLine;
   }
 
@@ -679,6 +701,68 @@ class JsonTool {
     return modelStr;
   }
 
+  /// HandyJSON的映射数据
+  static String _handyJSONMappingLines(
+    ModelInfo modelInfo,
+    ConfigurationsModel conf,
+    bool hasNeedMappingKeyProperties,
+  ) {
+    var modelStr = "";
+
+    if (conf.supportHandyJSON) {
+      /// 收集需要映射的属性
+      List<MapEntry<String, String>> mappings = [];
+      
+      /// 1. 数组类型的子模型属性映射
+      for (var property in modelInfo.properties) {
+        if (property.isList &&
+            !property.isUnidentifiedType &&
+            !_isBasicType(property.type) &&
+            !property.type.startsWith("[")) {
+          String propertyKey =
+              conf.isCamelCase
+                  ? StringUtils.underscoreToCamelCase(property.key)
+                  : property.key;
+          mappings.add(MapEntry(propertyKey, propertyKey));
+        }
+      }
+      
+      /// 2. 驼峰命名转换映射
+      if (conf.isCamelCase && hasNeedMappingKeyProperties) {
+        for (var property in modelInfo.properties) {
+          var camelKey = StringUtils.underscoreToCamelCase(property.key);
+          if (camelKey != property.key) {
+            // 检查是否已添加过（避免重复）
+            bool alreadyAdded = mappings.any((entry) => entry.key == camelKey);
+            if (!alreadyAdded) {
+              mappings.add(MapEntry(camelKey, property.key));
+            }
+          }
+        }
+      }
+      
+      /// 生成统一的mapping方法
+      if (mappings.isNotEmpty) {
+        // struct需要mutating关键字
+        final mutatingPan = conf.isUsingStruct ? "mutating " : "";
+        var mappingStr =
+            "\n\n    ${_publicPan(conf)}${mutatingPan}func mapping(mapper: HelpingMapper) {";
+        for (var mapping in mappings) {
+          mappingStr +=
+              "\n        mapper <<< self.${mapping.key} <-- \"${mapping.value}\"";
+        }
+        mappingStr += "\n    }";
+        modelStr += mappingStr;
+      }
+
+      /// 添加required init方法（class需要，struct不需要，且SmartCodable已经生成过）
+      if (!conf.isUsingStruct && !conf.supportSmartCodable) {
+        modelStr += "\n\n    ${_publicPan(conf)}required init() {}";
+      }
+    }
+    return modelStr;
+  }
+
   /// 构造方法
   static String _constructionMethod(
     ModelInfo modelInfo,
@@ -721,61 +805,89 @@ class JsonTool {
   static String _instanceMethod(ModelInfo modelInfo, ConfigurationsModel conf) {
     var modelStr = "";
     final objcSupportPan = conf.supportObjc ? "@objc " : "";
-    if (conf.objcObjcDeserialization) {
-      if (conf.supportSmartCodable) {
-        var deserializationSingle =
-            "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
-        deserializationSingle +=
-            "\n        guard let dictionary = value as? [String: Any] else { return nil }";
-        final optionsPan =
-            conf.codableMap || !conf.isCamelCase
-                ? ""
-                : ", options: [.key(.fromSnakeCase)]";
-        deserializationSingle +=
-            "\n        return ${modelInfo.typeName}.deserialize(from: dictionary$optionsPan)\n    }";
-        modelStr += "\n$deserializationSingle";
+    
+    // SmartCodable反序列化方法
+    if (conf.objcObjcDeserialization && conf.supportSmartCodable) {
+      var deserializationSingle =
+          "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+      deserializationSingle +=
+          "\n        guard let dictionary = value as? [String: Any] else { return nil }";
+      final optionsPan =
+          conf.codableMap || !conf.isCamelCase
+              ? ""
+              : ", options: [.key(.fromSnakeCase)]";
+      deserializationSingle +=
+          "\n        return ${modelInfo.typeName}.deserialize(from: dictionary$optionsPan)\n    }";
+      modelStr += "\n$deserializationSingle";
 
-        var deserializationArray =
-            "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
-        deserializationArray +=
-            "\n        guard let array = value as? [Any] else { return nil }";
-        deserializationArray +=
-            "\n        return [${modelInfo.typeName}].deserialize(from: array$optionsPan)\n    }";
-        modelStr += "\n$deserializationArray";
-      } else if (conf.originCodable) {
-        var deserializationSingle =
-            "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
-        deserializationSingle +=
-            "\n        guard let dictionary = value as? [String: Any] else { return nil }";
-        deserializationSingle +=
-            "\n        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else { return nil }";
-        if (conf.codableMap || !conf.isCamelCase) {
-          deserializationSingle +=
-              "\n        return try? JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n    }";
-        } else {
-          deserializationSingle +=
-              "\n        let decoder = JSONDecoder()\n        decoder.keyDecodingStrategy = .convertFromSnakeCase\n        return try? decoder.decode(${modelInfo.typeName}.self, from: data)\n    }";
-        }
-
-        modelStr += "\n$deserializationSingle";
-
-        var deserializationArray =
-            "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
-        deserializationArray +=
-            "\n        guard let array = value as? [Any] else { return nil }";
-        deserializationArray +=
-            "\n        guard let data = try? JSONSerialization.data(withJSONObject: array) else { return nil }";
-        if (conf.codableMap) {
-          deserializationArray +=
-              "\n        return try? JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n    }";
-        } else {
-          deserializationArray +=
-              "\n        let decoder = JSONDecoder()\n        decoder.keyDecodingStrategy = .convertFromSnakeCase\n        return try? decoder.decode([${modelInfo.typeName}].self, from: data)\n    }";
-        }
-
-        modelStr += "\n$deserializationArray";
-      }
+      var deserializationArray =
+          "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+      deserializationArray +=
+          "\n        guard let array = value as? [Any] else { return nil }";
+      deserializationArray +=
+          "\n        return [${modelInfo.typeName}].deserialize(from: array$optionsPan)\n    }";
+      modelStr += "\n$deserializationArray";
     }
+    
+    // 原生Codable反序列化方法
+    if (conf.objcObjcDeserialization && conf.originCodable) {
+      var deserializationSingle =
+          "\n    $objcSupportPan${_publicPan(conf)}static func instance(from value: Any?) -> ${modelInfo.typeName}? {";
+      deserializationSingle +=
+          "\n        guard let dictionary = value as? [String: Any] else { return nil }";
+      deserializationSingle +=
+          "\n        guard let data = try? JSONSerialization.data(withJSONObject: dictionary) else { return nil }";
+      if (conf.codableMap || !conf.isCamelCase) {
+        deserializationSingle +=
+            "\n        return try? JSONDecoder().decode(${modelInfo.typeName}.self, from: data)\n    }";
+      } else {
+        deserializationSingle +=
+            "\n        let decoder = JSONDecoder()\n        decoder.keyDecodingStrategy = .convertFromSnakeCase\n        return try? decoder.decode(${modelInfo.typeName}.self, from: data)\n    }";
+      }
+
+      modelStr += "\n$deserializationSingle";
+
+      var deserializationArray =
+          "\n    $objcSupportPan${_publicPan(conf)}static func instances(from value: Any?) -> [${modelInfo.typeName}]? {";
+      deserializationArray +=
+          "\n        guard let array = value as? [Any] else { return nil }";
+      deserializationArray +=
+          "\n        guard let data = try? JSONSerialization.data(withJSONObject: array) else { return nil }";
+      if (conf.codableMap) {
+        deserializationArray +=
+            "\n        return try? JSONDecoder().decode([${modelInfo.typeName}].self, from: data)\n    }";
+      } else {
+        deserializationArray +=
+            "\n        let decoder = JSONDecoder()\n        decoder.keyDecodingStrategy = .convertFromSnakeCase\n        return try? decoder.decode([${modelInfo.typeName}].self, from: data)\n    }";
+      }
+
+      modelStr += "\n$deserializationArray";
+    }
+
+    /// HandyJSON的反序列化方法
+    if (conf.supportHandyJSON && conf.objcObjcDeserialization) {
+      // HandyJSON方法名始终加前缀
+      final handyObjcSupportPan = conf.supportObjc ? "@objc " : "";
+
+      // 单例反序列化方法
+      var deserializationSingle =
+          "\n    $handyObjcSupportPan${_publicPan(conf)}static func handyInstance(from value: Any?) -> ${modelInfo.typeName}? {";
+      deserializationSingle +=
+          "\n        guard let dictionary = value as? [String: Any] else { return nil }";
+      deserializationSingle +=
+          "\n        return ${modelInfo.typeName}.deserialize(from: dictionary)\n    }";
+      modelStr += "\n$deserializationSingle";
+
+      // 数组反序列化方法
+      var deserializationArray =
+          "\n    $handyObjcSupportPan${_publicPan(conf)}static func handyInstances(from value: Any?) -> [${modelInfo.typeName}]? {";
+      deserializationArray +=
+          "\n        guard let array = value as? [Any] else { return nil }";
+      deserializationArray +=
+          "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
+      modelStr += "\n$deserializationArray";
+    }
+
     return modelStr;
   }
 }

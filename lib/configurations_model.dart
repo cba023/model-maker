@@ -17,6 +17,7 @@ class ConfigurationsModel extends ChangeNotifier {
   bool _isUsingStruct = false;
   bool _supportYYModel = false;
   bool _supportPublic = false;
+  bool _supportHandyJSON = false;
 
   /// 基于SmartCodable的objc反序列化方法
   bool _objcObjcDeserialization = false;
@@ -42,6 +43,7 @@ class ConfigurationsModel extends ChangeNotifier {
   bool get isUsingStruct => _isUsingStruct;
   bool get supportYYModel => _supportYYModel;
   bool get supportPublic => _supportPublic;
+  bool get supportHandyJSON => _supportHandyJSON;
   bool get objcObjcDeserialization => _objcObjcDeserialization;
   String get modelName => _modelName;
   String get pastedJsonString => _pastedJsonString;
@@ -52,20 +54,16 @@ class ConfigurationsModel extends ChangeNotifier {
 
   // Setter 方法 - 修改值并通知监听器
   set supportSmartCodable(bool value) {
-    _updateBoolField(
-      _supportSmartCodable,
-      value,
-      (newValue) {
-        _supportSmartCodable = newValue;
-        if (!newValue) {
-          if (!originCodable) {
-            _objcObjcDeserialization = false;
-          }
-        } else {
-          _originCodable = false;
+    _updateBoolField(_supportSmartCodable, value, (newValue) {
+      _supportSmartCodable = newValue;
+      if (!newValue) {
+        if (!originCodable) {
+          _objcObjcDeserialization = false;
         }
-      },
-    );
+      } else {
+        _originCodable = false;
+      }
+    });
   }
 
   set codableMap(bool value) {
@@ -73,72 +71,68 @@ class ConfigurationsModel extends ChangeNotifier {
   }
 
   set isCamelCase(bool value) {
-    _updateBoolField(_isCamelCase, value, (newValue) => _isCamelCase = newValue);
+    _updateBoolField(
+      _isCamelCase,
+      value,
+      (newValue) => _isCamelCase = newValue,
+    );
   }
 
   set supportObjc(bool value) {
-    _updateBoolField(
-      _supportObjc,
-      value,
-      (newValue) {
-        _supportObjc = newValue;
-        if (newValue) {
-          _isUsingStruct = false;
-        } else {
-          _supportYYModel = false;
-        }
-      },
-    );
+    _updateBoolField(_supportObjc, value, (newValue) {
+      _supportObjc = newValue;
+      if (newValue) {
+        _isUsingStruct = false;
+      } else {
+        _supportYYModel = false;
+      }
+    });
   }
 
   set isUsingStruct(bool value) {
-    _updateBoolField(
-      _isUsingStruct,
-      value,
-      (newValue) {
-        _isUsingStruct = newValue;
-        if (newValue) {
-          _supportYYModel = false;
-          _supportObjc = false;
-        }
-      },
-    );
+    _updateBoolField(_isUsingStruct, value, (newValue) {
+      _isUsingStruct = newValue;
+      if (newValue) {
+        _supportYYModel = false;
+        _supportObjc = false;
+      }
+    });
   }
 
   set supportYYModel(bool value) {
-    _updateBoolField(
-      _supportYYModel,
-      value,
-      (newValue) {
-        _supportYYModel = newValue;
-        if (newValue) {
-          _supportObjc = true;
-          _isUsingStruct = false;
-        }
-      },
-    );
+    _updateBoolField(_supportYYModel, value, (newValue) {
+      _supportYYModel = newValue;
+      if (newValue) {
+        _supportObjc = true;
+        _isUsingStruct = false;
+      }
+    });
   }
 
   set supportPublic(bool value) {
-    _updateBoolField(_supportPublic, value, (newValue) => _supportPublic = newValue);
+    _updateBoolField(
+      _supportPublic,
+      value,
+      (newValue) => _supportPublic = newValue,
+    );
+  }
+
+  set supportHandyJSON(bool value) {
+    _updateBoolField(_supportHandyJSON, value, (newValue) {
+      _supportHandyJSON = newValue;
+    });
   }
 
   set objcObjcDeserialization(bool value) {
-    _updateBoolField(
-      _objcObjcDeserialization,
-      value,
-      (newValue) {
-        _objcObjcDeserialization = newValue;
-        if (newValue) {
-          if (originCodable) {
-            _supportSmartCodable = false;
-          } else {
-            _supportSmartCodable = true;
-            _originCodable = false;
-          }
+    _updateBoolField(_objcObjcDeserialization, value, (newValue) {
+      _objcObjcDeserialization = newValue;
+      if (newValue) {
+        // 如果没有选择任何序列化库，默认启用SmartCodable
+        if (!originCodable && !supportSmartCodable && !supportHandyJSON) {
+          _supportSmartCodable = true;
         }
-      },
-    );
+      }
+    });
   }
 
   set modelName(String value) {
@@ -161,24 +155,24 @@ class ConfigurationsModel extends ChangeNotifier {
   }
 
   set supportConstruction(bool value) {
-    _updateBoolField(_supportConstruction, value, (newValue) => _supportConstruction = newValue);
+    _updateBoolField(
+      _supportConstruction,
+      value,
+      (newValue) => _supportConstruction = newValue,
+    );
   }
 
   set originCodable(bool value) {
-    _updateBoolField(
-      _originCodable,
-      value,
-      (newValue) {
-        _originCodable = newValue;
-        if (newValue) {
-          _supportSmartCodable = false;
-        } else {
-          if (!_supportSmartCodable) {
-            _objcObjcDeserialization = false;
-          }
+    _updateBoolField(_originCodable, value, (newValue) {
+      _originCodable = newValue;
+      if (newValue) {
+        _supportSmartCodable = false;
+      } else {
+        if (!_supportSmartCodable) {
+          _objcObjcDeserialization = false;
         }
-      },
-    );
+      }
+    });
   }
 
   void resetpastedJsonString() {
@@ -209,7 +203,11 @@ class ConfigurationsModel extends ChangeNotifier {
     }
   }
 
-  void _updateBoolField(bool currentValue, bool newValue, void Function(bool) updateFunc) {
+  void _updateBoolField(
+    bool currentValue,
+    bool newValue,
+    void Function(bool) updateFunc,
+  ) {
     if (currentValue != newValue) {
       updateFunc(newValue);
       _scheduleSave();
@@ -232,6 +230,7 @@ class ConfigurationsModel extends ChangeNotifier {
     await prefs.setBool('isUsingStruct', _isUsingStruct);
     await prefs.setBool('supportYYModel', _supportYYModel);
     await prefs.setBool('supportPublic', _supportPublic);
+    await prefs.setBool('supportHandyJSON', _supportHandyJSON);
     await prefs.setBool('objcObjcDeserialization', _objcObjcDeserialization);
     await prefs.setString('pastedJsonString', _pastedJsonString);
     await prefs.setBool('isMate', _isMate);
@@ -242,20 +241,22 @@ class ConfigurationsModel extends ChangeNotifier {
 
   Future<void> loadAllConfigurations() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     _supportSmartCodable = prefs.getBool('supportSmartCodable') ?? false;
     _isCamelCase = prefs.getBool('isCamelCase') ?? true;
     _supportObjc = prefs.getBool('supportObjc') ?? true;
     _isUsingStruct = prefs.getBool('isUsingStruct') ?? false;
     _supportYYModel = prefs.getBool('supportYYModel') ?? false;
     _supportPublic = prefs.getBool('supportPublic') ?? false;
-    _objcObjcDeserialization = prefs.getBool('objcObjcDeserialization') ?? false;
+    _supportHandyJSON = prefs.getBool('supportHandyJSON') ?? false;
+    _objcObjcDeserialization =
+        prefs.getBool('objcObjcDeserialization') ?? false;
     _pastedJsonString = prefs.getString('pastedJsonString') ?? "";
     _isMate = prefs.getBool('isMate') ?? false;
     _supportConstruction = prefs.getBool('supportConstruction') ?? false;
     _originCodable = prefs.getBool('originCodable') ?? true;
     _codableMap = prefs.getBool('codableMap') ?? true;
-    
+
     notifyListeners();
   }
 
