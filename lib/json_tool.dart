@@ -474,7 +474,7 @@ class JsonTool {
     // 构建协议列表
     List<String> protocols = [];
     if (conf.supportSmartCodable) {
-      protocols.add("SmartCodable");
+      protocols.add("SmartCodableX");
     }
     if (conf.originCodable) {
       protocols.add("Codable");
@@ -755,9 +755,17 @@ class JsonTool {
         modelStr += mappingStr;
       }
 
-      /// 添加required init方法（class需要，struct不需要，且SmartCodable已经生成过）
-      if (!conf.isUsingStruct && !conf.supportSmartCodable) {
-        modelStr += "\n\n    ${_publicPan(conf)}required init() {}";
+      /// 添加required init方法（class和struct都需要，且SmartCodable已经生成过）
+      if (!conf.supportSmartCodable) {
+        if (conf.isUsingStruct) {
+          // struct不需要required和override
+          modelStr += "\n\n    ${_publicPan(conf)}init() {}";
+        } else if (conf.supportObjc) {
+          modelStr +=
+              "\n\n    ${_publicPan(conf)}required override init() {\n        super.init()\n    }";
+        } else {
+          modelStr += "\n\n    ${_publicPan(conf)}required init() {}";
+        }
       }
     }
     return modelStr;
@@ -882,9 +890,9 @@ class JsonTool {
       var deserializationArray =
           "\n    $handyObjcSupportPan${_publicPan(conf)}static func handyInstances(from value: Any?) -> [${modelInfo.typeName}]? {";
       deserializationArray +=
-          "\n        guard let array = value as? [Any] else { return nil }";
+          "\n        guard let array = value as? [Any], let models = [${modelInfo.typeName}].deserialize(from: array) as? [${modelInfo.typeName}] else { return nil }";
       deserializationArray +=
-          "\n        return [${modelInfo.typeName}].deserialize(from: array)\n    }";
+          "\n        return models\n    }";
       modelStr += "\n$deserializationArray";
     }
 

@@ -56,12 +56,13 @@ class ConfigurationsModel extends ChangeNotifier {
   set supportSmartCodable(bool value) {
     _updateBoolField(_supportSmartCodable, value, (newValue) {
       _supportSmartCodable = newValue;
-      if (!newValue) {
-        if (!originCodable) {
+      if (newValue) {
+        _originCodable = false;
+        _supportHandyJSON = false;
+      } else {
+        if (!originCodable && !supportHandyJSON) {
           _objcObjcDeserialization = false;
         }
-      } else {
-        _originCodable = false;
       }
     });
   }
@@ -120,6 +121,9 @@ class ConfigurationsModel extends ChangeNotifier {
   set supportHandyJSON(bool value) {
     _updateBoolField(_supportHandyJSON, value, (newValue) {
       _supportHandyJSON = newValue;
+      if (newValue) {
+        _supportSmartCodable = false;
+      }
     });
   }
 
@@ -168,7 +172,7 @@ class ConfigurationsModel extends ChangeNotifier {
       if (newValue) {
         _supportSmartCodable = false;
       } else {
-        if (!_supportSmartCodable) {
+        if (!supportSmartCodable && !supportHandyJSON) {
           _objcObjcDeserialization = false;
         }
       }
